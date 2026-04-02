@@ -563,7 +563,7 @@ static void ST_drawDebugInfo(void)
 
 	if (cv_debug & DBG_DETAILED)
 	{
-		V_DrawRightAlignedString(320, height - 104, V_MONOSPACE, va("SHIELD: %5x", stplyr->powers[pw_shield]));
+		V_DrawRightAlignedString(320, height - 104, V_MONOSPACE, va("IN BATTLE: %d", battle));
 		V_DrawRightAlignedString(320, height - 96,  V_MONOSPACE, va("SCALE: %5d%%", (stplyr->mo->scale*100)/FRACUNIT));
 		V_DrawRightAlignedString(320, height - 88,  V_MONOSPACE, va("DASH: %3d/%3d", stplyr->dashspeed>>FRACBITS, FixedMul(stplyr->maxdash,stplyr->mo->scale)>>FRACBITS));
 		V_DrawRightAlignedString(320, height - 80,  V_MONOSPACE, va("AIR: %4d, %3d", stplyr->powers[pw_underwater], stplyr->powers[pw_spacetime]));
@@ -1752,6 +1752,8 @@ static void ST_overlayDrawer(void)
 			ST_drawNiGHTSHUD();
 		else
 		{
+			V_DrawString(0, 0, 0, "PLACEHOLDER HUD");
+/*
 #ifdef HAVE_BLUA
 			if (LUA_HudEnabled(hud_score))
 #endif
@@ -1770,6 +1772,7 @@ static void ST_overlayDrawer(void)
 #endif
 			)
 				ST_drawLives();
+*/
 		}
 	}
 

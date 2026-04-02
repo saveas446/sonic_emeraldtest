@@ -5818,8 +5818,6 @@ void P_SetScale(mobj_t *mobj, fixed_t newscale)
 	if (!mobj)
 		return;
 
-	CONS_Printf("Scale: %d\n", newscale);
-
 	oldscale = mobj->scale; //keep for adjusting stuff below
 
 	mobj->scale = newscale;

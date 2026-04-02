@@ -91,6 +91,9 @@ boolean disableSpeedAdjust = false;
 boolean imcontinuing = false;
 boolean runemeraldmanager = false;
 
+// Are we in a battle?
+boolean battle;
+
 // menu demo things
 UINT8  numDemos      = 3;
 UINT32 demoDelayTime = 15*TICRATE;
