@@ -664,6 +664,18 @@ void P_EmeraldManager(void)
 }
 
 //
+// P_EnterBattle
+//
+
+void P_EnterBattle(mobj_t* target)
+{
+	// Pretty empty for now
+	battle = true;
+	CONS_Printf("Battle triggered!"); // Debug
+	target->player->battlegauge = 0; // Reset battle gauge
+}
+
+//
 // P_ExplodeMissile
 //
 void P_ExplodeMissile(mobj_t *mo)

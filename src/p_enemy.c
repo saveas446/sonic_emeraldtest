@@ -671,7 +671,7 @@ boolean P_LookForPlayers(mobj_t *actor, boolean allaround, boolean tracer, fixed
 		if (!allaround)
 		{
 			an = R_PointToAngle2(actor->x, actor->y, player->mo->x, player->mo->y) - actor->angle;
-			if (an > ANGLE_90 && an < ANGLE_270)
+			if (an > ANGLE_157h && an < ANGLE_202h)
 			{
 				dist = P_AproxDistance(player->mo->x - actor->x, player->mo->y - actor->y);
 				// if real close, react anyway
@@ -841,8 +841,12 @@ void A_Look(mobj_t *actor)
 		return;
 #endif
 
-	if (!P_LookForPlayers(actor, locvar1 & 65535, false , FixedMul((locvar1 >> 16)*FRACUNIT, actor->scale)))
+	if (P_LookForPlayers(actor, false, false, FRACUNIT*384)) {
+		if (actor->target)
+			P_EnterBattle(actor->target);
+	} else {
 		return;
+	}
 
 	// go into chase state
 	if (!locvar2)

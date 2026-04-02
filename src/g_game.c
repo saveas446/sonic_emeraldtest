@@ -91,8 +91,9 @@ boolean disableSpeedAdjust = false;
 boolean imcontinuing = false;
 boolean runemeraldmanager = false;
 
-// Are we in a battle?
-boolean battle;
+// BATTLE STUFF
+boolean battle; // Are we in a battle?
+boolean canmove; // Are we moving around or selecting UI?
 
 // menu demo things
 UINT8  numDemos      = 3;
@@ -1013,6 +1014,9 @@ static fixed_t forwardmove[2] = {25<<FRACBITS>>16, 50<<FRACBITS>>16};
 static fixed_t sidemove[2] = {25<<FRACBITS>>16, 50<<FRACBITS>>16}; // faster!
 static fixed_t angleturn[3] = {640, 1280, 320}; // + slow turn
 
+// Used to detect if we've pressed fire
+boolean fire_lastframe;
+
 void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 {
 	boolean forcestrafe = false;
@@ -1170,150 +1174,163 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 
 	// fire with any button/key
 	axis = JoyAxis(AXISFIRE);
-	if (PLAYER1INPUTDOWN(gc_fire) || (cv_usejoystick.value && axis > 0))
-		cmd->buttons |= BT_ATTACK;
+	if ((PLAYER1INPUTDOWN(gc_fire) && !fire_lastframe) && battle) {
+		// I'm sorry.
+		if (canmove)
+			canmove = false;
+		else
+			canmove = true;
 
-	// fire normal with any button/key
-	axis = JoyAxis(AXISFIRENORMAL);
-	if (PLAYER1INPUTDOWN(gc_firenormal) || (cv_usejoystick.value && axis > 0))
-		cmd->buttons |= BT_FIRENORMAL;
-
-	if (PLAYER1INPUTDOWN(gc_tossflag))
-		cmd->buttons |= BT_TOSSFLAG;
-
-	// Lua scriptable buttons
-	if (PLAYER1INPUTDOWN(gc_custom1))
-		cmd->buttons |= BT_CUSTOM1;
-	if (PLAYER1INPUTDOWN(gc_custom2))
-		cmd->buttons |= BT_CUSTOM2;
-	if (PLAYER1INPUTDOWN(gc_custom3))
-		cmd->buttons |= BT_CUSTOM3;
-
-	// use with any button/key
-	axis = JoyAxis(AXISSPIN);
-	if (PLAYER1INPUTDOWN(gc_use) || (cv_usejoystick.value && axis > 0))
-		cmd->buttons |= BT_USE;
-
-	// Camera Controls
-	if (cv_debug || cv_analog.value || demoplayback || objectplacing || player->pflags & PF_NIGHTSMODE)
-	{
-		if (PLAYER1INPUTDOWN(gc_camleft))
-			cmd->buttons |= BT_CAMLEFT;
-		if (PLAYER1INPUTDOWN(gc_camright))
-			cmd->buttons |= BT_CAMRIGHT;
 	}
+	fire_lastframe = PLAYER1INPUTDOWN(gc_fire);
+		
+	// Disable movement if you're selecting battle UI
+	if (!(battle && !canmove)) {
+		// fire normal with any button/key
+		axis = JoyAxis(AXISFIRENORMAL);
+		if (PLAYER1INPUTDOWN(gc_firenormal) || (cv_usejoystick.value && axis > 0))
+			cmd->buttons |= BT_FIRENORMAL;
 
-	if (PLAYER1INPUTDOWN(gc_camreset))
-	{
-		if (camera.chase && !resetdown)
-			P_ResetCamera(&players[displayplayer], &camera);
-		resetdown = true;
-	}
-	else
-		resetdown = false;
+		if (PLAYER1INPUTDOWN(gc_tossflag))
+			cmd->buttons |= BT_TOSSFLAG;
 
-	// jump button
-	axis = JoyAxis(AXISJUMP);
-	if (PLAYER1INPUTDOWN(gc_jump) || (cv_usejoystick.value && axis > 0))
-		cmd->buttons |= BT_JUMP;
+		// Lua scriptable buttons
+		if (PLAYER1INPUTDOWN(gc_custom1))
+			cmd->buttons |= BT_CUSTOM1;
+		if (PLAYER1INPUTDOWN(gc_custom2))
+			cmd->buttons |= BT_CUSTOM2;
+		if (PLAYER1INPUTDOWN(gc_custom3))
+			cmd->buttons |= BT_CUSTOM3;
 
-	// player aiming shit, ahhhh...
-	{
-		INT32 player_invert = cv_invertmouse.value ? -1 : 1;
-		INT32 screen_invert =
-			(player->mo && (player->mo->eflags & MFE_VERTICALFLIP)
-			 && (!camera.chase || player->pflags & PF_FLIPCAM)) //because chasecam's not inverted
-			 ? -1 : 1; // set to -1 or 1 to multiply
+		// use with any button/key
+		axis = JoyAxis(AXISSPIN);
+		if (PLAYER1INPUTDOWN(gc_use) || (cv_usejoystick.value && axis > 0))
+			cmd->buttons |= BT_USE;
 
-		// mouse look stuff (mouse look is not the same as mouse aim)
-		if (mouseaiming)
+		// Camera Controls
+		if (cv_debug || cv_analog.value || demoplayback || objectplacing || player->pflags & PF_NIGHTSMODE)
 		{
-			keyboard_look = false;
-
-			// looking up/down
-			localaiming += (mlooky<<19)*player_invert*screen_invert;
+			if (PLAYER1INPUTDOWN(gc_camleft))
+				cmd->buttons |= BT_CAMLEFT;
+			if (PLAYER1INPUTDOWN(gc_camright))
+				cmd->buttons |= BT_CAMRIGHT;
 		}
 
-		axis = JoyAxis(AXISLOOK);
-		if (analogjoystickmove && joyaiming && axis != 0 && cv_lookaxis.value != 0)
-			localaiming += (axis<<16) * screen_invert;
-
-		// spring back if not using keyboard neither mouselookin'
-		if (!keyboard_look && cv_lookaxis.value == 0 && !joyaiming && !mouseaiming)
-			localaiming = 0;
-
-		if (!(player->pflags & PF_NIGHTSMODE))
+		if (PLAYER1INPUTDOWN(gc_camreset))
 		{
-			if (PLAYER1INPUTDOWN(gc_lookup) || (gamepadjoystickmove && axis < 0))
+			if (camera.chase && !resetdown)
+				P_ResetCamera(&players[displayplayer], &camera);
+			resetdown = true;
+		}
+		else
+			resetdown = false;
+
+		// jump button
+		axis = JoyAxis(AXISJUMP);
+		if (PLAYER1INPUTDOWN(gc_jump) || (cv_usejoystick.value && axis > 0))
+			cmd->buttons |= BT_JUMP;
+
+	}
+
+			// player aiming shit, ahhhh...
 			{
-				localaiming += KB_LOOKSPEED * screen_invert;
-				keyboard_look = true;
+				INT32 player_invert = cv_invertmouse.value ? -1 : 1;
+				INT32 screen_invert =
+					(player->mo && (player->mo->eflags & MFE_VERTICALFLIP)
+					&& (!camera.chase || player->pflags & PF_FLIPCAM)) //because chasecam's not inverted
+					? -1 : 1; // set to -1 or 1 to multiply
+	
+				// mouse look stuff (mouse look is not the same as mouse aim)
+				if (mouseaiming)
+				{
+					keyboard_look = false;
+	
+					// looking up/down
+					localaiming += (mlooky<<19)*player_invert*screen_invert;
+				}
+	
+				axis = JoyAxis(AXISLOOK);
+				if (analogjoystickmove && joyaiming && axis != 0 && cv_lookaxis.value != 0)
+					localaiming += (axis<<16) * screen_invert;
+	
+				// spring back if not using keyboard neither mouselookin'
+				if (!keyboard_look && cv_lookaxis.value == 0 && !joyaiming && !mouseaiming)
+					localaiming = 0;
+	
+				if (!(player->pflags & PF_NIGHTSMODE))
+				{
+					if (PLAYER1INPUTDOWN(gc_lookup) || (gamepadjoystickmove && axis < 0))
+					{
+						localaiming += KB_LOOKSPEED * screen_invert;
+						keyboard_look = true;
+					}
+					else if (PLAYER1INPUTDOWN(gc_lookdown) || (gamepadjoystickmove && axis > 0))
+					{
+						localaiming -= KB_LOOKSPEED * screen_invert;
+						keyboard_look = true;
+					}
+					else if (PLAYER1INPUTDOWN(gc_centerview))
+						localaiming = 0;
+				}
+	
+				// accept no mlook for network games
+				if (!cv_allowmlook.value)
+					localaiming = 0;
+	
+				cmd->aiming = G_ClipAimingPitch(&localaiming);
 			}
-			else if (PLAYER1INPUTDOWN(gc_lookdown) || (gamepadjoystickmove && axis > 0))
-			{
-				localaiming -= KB_LOOKSPEED * screen_invert;
-				keyboard_look = true;
-			}
-			else if (PLAYER1INPUTDOWN(gc_centerview))
-				localaiming = 0;
+
+	if (!(battle && !canmove)) {
+		if (!mouseaiming && cv_mousemove.value)
+			forward += mousey;
+
+		if (cv_analog.value ||
+			(!demoplayback && (player->climbing
+			|| (player->pflags & PF_SLIDING)))) // Analog for mouse
+			side += mousex*2;
+		else
+			cmd->angleturn = (INT16)(cmd->angleturn - (mousex*8));
+
+		mousex = mousey = mlooky = 0;
+
+		if (forward > MAXPLMOVE)
+			forward = MAXPLMOVE;
+		else if (forward < -MAXPLMOVE)
+			forward = -MAXPLMOVE;
+		if (side > MAXPLMOVE)
+			side = MAXPLMOVE;
+		else if (side < -MAXPLMOVE)
+			side = -MAXPLMOVE;
+
+		// No additional acceleration when moving forward/backward and strafing simultaneously.
+		// do this AFTER we cap to MAXPLMOVE so people can't find ways to cheese around this.
+		if (!forcestrafe && forward && side)
+		{
+			forward = FixedMul(forward, 3*FRACUNIT/4);
+			side = FixedMul(side, 3*FRACUNIT/4);
 		}
 
-		// accept no mlook for network games
-		if (!cv_allowmlook.value)
-			localaiming = 0;
+		//Silly hack to make 2d mode *somewhat* playable with no chasecam.
+		if ((twodlevel || (player->mo && player->mo->flags2 & MF2_TWOD)) && !camera.chase)
+		{
+			INT32 temp = forward;
+			forward = side;
+			side = temp;
+		}
 
-		cmd->aiming = G_ClipAimingPitch(&localaiming);
-	}
+		cmd->forwardmove = (SINT8)(cmd->forwardmove + forward);
+		cmd->sidemove = (SINT8)(cmd->sidemove + side);
 
-	if (!mouseaiming && cv_mousemove.value)
-		forward += mousey;
-
-	if (cv_analog.value ||
-		(!demoplayback && (player->climbing
-		|| (player->pflags & PF_SLIDING)))) // Analog for mouse
-		side += mousex*2;
-	else
-		cmd->angleturn = (INT16)(cmd->angleturn - (mousex*8));
-
-	mousex = mousey = mlooky = 0;
-
-	if (forward > MAXPLMOVE)
-		forward = MAXPLMOVE;
-	else if (forward < -MAXPLMOVE)
-		forward = -MAXPLMOVE;
-	if (side > MAXPLMOVE)
-		side = MAXPLMOVE;
-	else if (side < -MAXPLMOVE)
-		side = -MAXPLMOVE;
-
-	// No additional acceleration when moving forward/backward and strafing simultaneously.
-	// do this AFTER we cap to MAXPLMOVE so people can't find ways to cheese around this.
-	if (!forcestrafe && forward && side)
-	{
-		forward = FixedMul(forward, 3*FRACUNIT/4);
-		side = FixedMul(side, 3*FRACUNIT/4);
-	}
-
-	//Silly hack to make 2d mode *somewhat* playable with no chasecam.
-	if ((twodlevel || (player->mo && player->mo->flags2 & MF2_TWOD)) && !camera.chase)
-	{
-		INT32 temp = forward;
-		forward = side;
-		side = temp;
-	}
-
-	cmd->forwardmove = (SINT8)(cmd->forwardmove + forward);
-	cmd->sidemove = (SINT8)(cmd->sidemove + side);
-
-	if (cv_analog.value) {
-		cmd->angleturn = (INT16)(thiscam->angle >> 16);
-		if (player->awayviewtics)
-			cmd->angleturn = (INT16)(player->awayviewmobj->angle >> 16);
-	}
-	else
-	{
-		localangle += (cmd->angleturn<<16);
-		cmd->angleturn = (INT16)(localangle >> 16);
+		if (cv_analog.value) {
+			cmd->angleturn = (INT16)(thiscam->angle >> 16);
+			if (player->awayviewtics)
+				cmd->angleturn = (INT16)(player->awayviewmobj->angle >> 16);
+		}
+		else
+		{
+			localangle += (cmd->angleturn<<16);
+			cmd->angleturn = (INT16)(localangle >> 16);
+		}
 	}
 
 	//Reset away view if a command is given.

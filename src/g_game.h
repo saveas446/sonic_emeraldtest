@@ -48,6 +48,7 @@ extern mobj_t *metalplayback;
 extern tic_t levelstarttic;
 
 extern boolean battle;
+extern boolean canmove;
 
 // for modding?
 extern INT16 prevmap, nextmap;

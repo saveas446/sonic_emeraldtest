@@ -9022,11 +9022,18 @@ void P_PlayerThink(player_t *player)
 		player->rmomx = player->rmomy = 0; // no actual momentum from your controls
 		P_ResetScore(player);
 	}
-	else
+	else {
 		P_MovePlayer(player);
+	}
 
-	if (!player->mo)
+	if (!player->mo) {
 		return; // P_MovePlayer removed player->mo.
+	} else {
+		if (battle) {
+			// Max 3 rotations of the gauge
+			player->battlegauge = min(player->battlegauge + 2, 360*3);
+		}
+	}
 
 	// Unset statis flags after moving.
 	// In other words, if you manually set stasis via code,

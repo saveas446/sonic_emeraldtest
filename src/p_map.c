@@ -788,7 +788,7 @@ static boolean PIT_CheckThing(mobj_t *thing)
 		droneobj->extravalue2 = (INT32)leveltime + TICRATE;
 	}
 
-	// check for special pickup
+	/*// check for special pickup
 	if (thing->flags & MF_SPECIAL && tmthing->player)
 	{
 		P_TouchSpecialThing(thing, tmthing, true); // can remove thing
@@ -799,7 +799,7 @@ static boolean PIT_CheckThing(mobj_t *thing)
 	{
 		P_TouchSpecialThing(tmthing, thing, true); // can remove thing
 		return true;
-	}
+	}*/
 
 	// Sprite Spikes!
 	// Do not return because solidity code comes below.

@@ -430,6 +430,8 @@ typedef struct player_s
 	boolean spectator;
 	UINT8 bot;
 
+	UINT16 battlegauge;
+
 	tic_t jointime; // Timer when player joins game to change skin/color
 #ifdef HWRENDER
 	fixed_t fovadd; // adjust FOV for hw rendering

@@ -1745,8 +1745,8 @@ static void ST_doItemFinderIconsAndSound(void)
 //
 static void ST_overlayDrawer(void)
 {
-	//hu_showscores = auto hide score/time/rings when tab rankings are shown
-	if (!(hu_showscores && (netgame || multiplayer)))
+	// Overworld HUD
+	if (!battle)
 	{
 		if (maptol & TOL_NIGHTS)
 			ST_drawNiGHTSHUD();
@@ -1774,88 +1774,10 @@ static void ST_overlayDrawer(void)
 				ST_drawLives();
 */
 		}
-	}
-
-	// GAME OVER pic
-	if (G_GametypeUsesLives() && stplyr->lives <= 0 && !(hu_showscores && (netgame || multiplayer)))
-	{
-		patch_t *p;
-
-		if (countdown == 1)
-			p = timeover;
-		else
-			p = sboover;
-
-		V_DrawScaledPatch((BASEVIDWIDTH - SHORT(p->width))/2, STRINGY(BASEVIDHEIGHT/2 - (SHORT(p->height)/2)), 0, p);
-	}
-
-
-	if (!hu_showscores) // hide the following if TAB is held
-	{
-		// Countdown timer for Race Mode
-		if (countdown)
-			V_DrawCenteredString(BASEVIDWIDTH/2, STRINGY(176), 0, va("%d", countdown/TICRATE));
-
-		// If you are in overtime, put a big honkin' flashin' message on the screen.
-		if (G_RingSlingerGametype() && cv_overtime.value
-			&& (leveltime > (timelimitintics + TICRATE/2)) && cv_timelimit.value && (leveltime/TICRATE % 2 == 0))
-		{
-			if (splitscreen)
-				V_DrawCenteredString(BASEVIDWIDTH/2, STRINGY(168), 0, M_GetText("OVERTIME!"));
-			else
-				V_DrawCenteredString(BASEVIDWIDTH/2, STRINGY(184), 0, M_GetText("OVERTIME!"));
-		}
-
-		// Draw Match-related stuff
-		//\note Match HUD is drawn no matter what gametype.
-		// ... just not if you're a spectator.
-		if (!stplyr->spectator)
-			ST_drawMatchHUD();
-
-		// Race HUD Stuff
-		if (gametype == GT_RACE || gametype == GT_COMPETITION)
-			ST_drawRaceHUD();
-		// Tag HUD Stuff
-		else if (gametype == GT_TAG || gametype == GT_HIDEANDSEEK)
-			ST_drawTagHUD();
-		// CTF HUD Stuff
-		else if (gametype == GT_CTF)
-			ST_drawCTFHUD();
-
-		// Team names for team gametypes
-		if (G_GametypeHasTeams())
-			ST_drawTeamName();
-
-		// Special Stage HUD
-		if (!useNightsSS && G_IsSpecialStage(gamemap) && stplyr == &players[displayplayer])
-			ST_drawSpecialStageHUD();
-
-		// Emerald Hunt Indicators
-		if (cv_itemfinder.value && M_SecretUnlocked(SECRET_ITEMFINDER))
-			ST_doItemFinderIconsAndSound();
-		else
-			ST_doHuntIconsAndSound();
-
-		if (stplyr->powers[pw_gravityboots] > 3*TICRATE || (stplyr->powers[pw_gravityboots] && leveltime & 1))
-			V_DrawScaledPatch(hudinfo[HUD_GRAVBOOTSICO].x, STRINGY(hudinfo[HUD_GRAVBOOTSICO].y), V_SNAPTORIGHT, gravboots);
-
-		if(!P_IsLocalPlayer(stplyr))
-		{
-			char name[MAXPLAYERNAME+1];
-			// shorten the name if its more than twelve characters.
-			strlcpy(name, player_names[stplyr-players], 13);
-
-			// Show name of player being displayed
-			V_DrawCenteredString((BASEVIDWIDTH/6), BASEVIDHEIGHT-80, 0, M_GetText("Viewpoint:"));
-			V_DrawCenteredString((BASEVIDWIDTH/6), BASEVIDHEIGHT-64, V_ALLOWLOWERCASE, name);
-		}
-
-		// This is where we draw all the fun cheese if you have the chasecam off!
-		if ((stplyr == &players[displayplayer] && !camera.chase)
-			|| ((splitscreen && stplyr == &players[secondarydisplayplayer]) && !camera2.chase))
-		{
-			ST_drawFirstPersonHUD();
-		}
+	// In-battle HUD
+	} else {
+		V_DrawRightAlignedString(BASEVIDWIDTH, 160, 0, va("BATTLE GAUGE: %d", stplyr->battlegauge));
+		V_DrawRightAlignedString(BASEVIDWIDTH, 166, 0, va("SELECT: %d", canmove));
 	}
 
 #ifdef HAVE_BLUA
@@ -1870,42 +1792,6 @@ static void ST_overlayDrawer(void)
 #endif
 	)
 		ST_drawLevelTitle();
-
-	if (!hu_showscores && !splitscreen && netgame && displayplayer == consoleplayer)
-	{
-		if (G_GametypeUsesLives() && stplyr->lives <= 0 && countdown != 1)
-			V_DrawCenteredString(BASEVIDWIDTH/2, STRINGY(132), 0, M_GetText("Press Viewpoint Key to watch a player."));
-		else if (gametype == GT_HIDEANDSEEK &&
-		 (!stplyr->spectator && !(stplyr->pflags & PF_TAGIT)) && (leveltime > hidetime * TICRATE))
-		{
-			V_DrawCenteredString(BASEVIDWIDTH/2, STRINGY(116), 0, M_GetText("You cannot move while hiding."));
-			V_DrawCenteredString(BASEVIDWIDTH/2, STRINGY(132), 0, M_GetText("Press Viewpoint Key to watch a player."));
-		}
-		else if (!G_PlatformGametype() && stplyr->playerstate == PST_DEAD && stplyr->lives) //Death overrides spectator text.
-		{
-			INT32 respawntime = cv_respawntime.value - stplyr->deadtimer/TICRATE;
-			if (respawntime > 0 && !stplyr->spectator)
-				V_DrawCenteredString(BASEVIDWIDTH/2, STRINGY(132), V_HUDTRANSHALF, va(M_GetText("Respawn in: %d second%s."), respawntime, respawntime == 1 ? "" : "s"));
-			else
-				V_DrawCenteredString(BASEVIDWIDTH/2, STRINGY(132), V_HUDTRANSHALF, M_GetText("Press Jump to respawn."));
-		}
-		else if (stplyr->spectator
-#ifdef HAVE_BLUA
-		&& LUA_HudEnabled(hud_textspectator)
-#endif
-		)
-		{
-			V_DrawCenteredString(BASEVIDWIDTH/2, STRINGY(60), V_HUDTRANSHALF, M_GetText("You are a spectator."));
-			if (G_GametypeHasTeams())
-				V_DrawCenteredString(BASEVIDWIDTH/2, STRINGY(132), V_HUDTRANSHALF, M_GetText("Press Fire to be assigned to a team."));
-			else if (G_IsSpecialStage(gamemap) && useNightsSS)
-				V_DrawCenteredString(BASEVIDWIDTH/2, STRINGY(132), V_HUDTRANSHALF, M_GetText("You cannot join the game until the stage has ended."));
-			else
-				V_DrawCenteredString(BASEVIDWIDTH/2, STRINGY(132), V_HUDTRANSHALF, M_GetText("Press Fire to enter the game."));
-			V_DrawCenteredString(BASEVIDWIDTH/2, STRINGY(148), V_HUDTRANSHALF, M_GetText("Press Viewpoint Key to watch a player."));
-			V_DrawCenteredString(BASEVIDWIDTH/2, STRINGY(164), V_HUDTRANSHALF, M_GetText("Press Jump to float and Spin to sink."));
-		}
-	}
 
 	ST_drawDebugInfo();
 }
