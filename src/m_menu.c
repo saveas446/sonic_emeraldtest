@@ -333,6 +333,9 @@ static void Nextmap_OnChange(void);
 static void Newgametype_OnChange(void);
 static void Dummymares_OnChange(void);
 
+menu_t AttackMenuDef;
+
+
 // ==========================================================================
 // CONSOLE VARIABLES AND THEIR POSSIBLE VALUES GO HERE.
 // ==========================================================================
@@ -8015,3 +8018,48 @@ static void M_HandleFogColor(INT32 choice)
 	}
 }
 #endif
+
+// BATTLE MENUS
+
+
+// ---------
+// Main Menu
+// ---------
+static menuitem_t BattleMainMenu[] =
+{
+	{IT_SUBMENU|IT_STRING, NULL, "Attack",        &AttackMenuDef,  140},
+	{IT_SUBMENU|IT_STRING, NULL, "Chaos Power",   &AttackMenuDef,  140+16},
+	{IT_SUBMENU|IT_STRING, NULL, "Items",         &AttackMenuDef,  140+32},
+	{IT_SUBMENU|IT_STRING, NULL, "Escape",        &AttackMenuDef,  140+48},
+};
+
+menu_t BattleMainMenuDef = { 
+	((void *)0), 
+	sizeof(BattleMainMenu)/sizeof(menuitem_t), 
+	((void *)0), 
+	BattleMainMenu, 
+	((void *)0), 
+	40, 72, 
+	0, 
+	((void *)0)
+};
+
+void M_Attack(int ch) {
+	CONS_Printf("testing testing 1 2 3\n");
+}
+
+static menuitem_t AttackMenu[] =
+{
+	{IT_CALL|IT_STRING, NULL, "Placeholder", M_Attack, 140}
+};
+
+menu_t AttackMenuDef = { 
+	((void *)0), 
+	sizeof(AttackMenu)/sizeof(menuitem_t), 
+	&BattleMainMenuDef, 
+	AttackMenu, 
+	((void *)0), 
+	40, 72, 
+	0, 
+	((void *)0)
+};

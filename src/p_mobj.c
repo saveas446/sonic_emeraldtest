@@ -12,6 +12,7 @@
 /// \brief Moving object handling. Spawn functions
 
 #include "doomdef.h"
+#include "g_battle.h"
 #include "g_game.h"
 #include "g_input.h"
 #include "st_stuff.h"
@@ -667,12 +668,13 @@ void P_EmeraldManager(void)
 // P_EnterBattle
 //
 
-void P_EnterBattle(mobj_t* target)
+void P_EnterBattle(mobj_t* player, mobj_t* enemy)
 {
 	// Pretty empty for now
 	battle = true;
 	CONS_Printf("Battle triggered!"); // Debug
-	target->player->battlegauge = 0; // Reset battle gauge
+	player->player->battlegauge = 0; // Reset battle gauge
+	battletarget = enemy;
 }
 
 //

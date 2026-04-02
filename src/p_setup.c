@@ -14,6 +14,7 @@
 #include "doomdef.h"
 #include "d_main.h"
 #include "byteptr.h"
+#include "g_battle.h"
 #include "g_game.h"
 
 #include "p_local.h"

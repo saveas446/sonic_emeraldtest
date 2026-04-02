@@ -843,7 +843,7 @@ void A_Look(mobj_t *actor)
 
 	if (P_LookForPlayers(actor, false, false, FRACUNIT*384)) {
 		if (actor->target)
-			P_EnterBattle(actor->target);
+			P_EnterBattle(actor->target, actor);
 	} else {
 		return;
 	}

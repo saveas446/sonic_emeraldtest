@@ -450,6 +450,9 @@
     <ClInclude Include="sdlmain.h">
       <Filter>SDLApp</Filter>
     </ClInclude>
+    <ClInclude Include="..\g_battle.h">
+      <Filter>G_Game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\tmap.nas">

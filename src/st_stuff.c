@@ -14,6 +14,7 @@
 ///        Does palette indicators as well (red pain/berserk, bright pickup)
 
 #include "doomdef.h"
+#include "g_battle.h"
 #include "g_game.h"
 #include "r_local.h"
 #include "p_local.h"
@@ -1740,6 +1741,17 @@ static void ST_doItemFinderIconsAndSound(void)
 		S_StartSound(NULL, sfx_emfind);
 }
 
+// Draw menus when in battle
+static void ST_drawBattleMenu(void)
+{
+	for (short i = 0; i < currentbattlemenu->numitems; i++)
+		V_DrawCenteredString(80, currentbattlemenu->menuitems[i].alphaKey, 0, currentbattlemenu->menuitems[i].text);
+	
+	// Do not draw cursor if moving around
+	if (!canmove)
+		V_DrawScaledPatch(10, currentbattlemenu->menuitems[itemon_battle].alphaKey, 0, W_CachePatchName("M_CURSOR", PU_CACHE)); // draw cursor
+}
+
 // Draw the status bar overlay, customisable: the user chooses which
 // kind of information to overlay
 //
@@ -1777,7 +1789,10 @@ static void ST_overlayDrawer(void)
 	// In-battle HUD
 	} else {
 		V_DrawRightAlignedString(BASEVIDWIDTH, 160, 0, va("BATTLE GAUGE: %d", stplyr->battlegauge));
-		V_DrawRightAlignedString(BASEVIDWIDTH, 166, 0, va("SELECT: %d", canmove));
+		V_DrawRightAlignedString(BASEVIDWIDTH, 168, 0, va("SELECT: %d", canmove));
+		V_DrawRightAlignedString(BASEVIDWIDTH, 172, 0, va("ITEMON: %d", itemon_battle));
+
+		ST_drawBattleMenu();
 	}
 
 #ifdef HAVE_BLUA

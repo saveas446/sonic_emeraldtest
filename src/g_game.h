@@ -47,9 +47,6 @@ extern mobj_t *metalplayback;
 // gametic at level start
 extern tic_t levelstarttic;
 
-extern boolean battle;
-extern boolean canmove;
-
 // for modding?
 extern INT16 prevmap, nextmap;
 extern INT32 gameovertics;

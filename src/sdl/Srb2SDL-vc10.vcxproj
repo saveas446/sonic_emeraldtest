@@ -232,6 +232,7 @@
     <ClInclude Include="..\fastcmp.h" />
     <ClInclude Include="..\filesrch.h" />
     <ClInclude Include="..\f_finale.h" />
+    <ClInclude Include="..\g_battle.h" />
     <ClInclude Include="..\g_game.h" />
     <ClInclude Include="..\g_input.h" />
     <ClInclude Include="..\g_state.h" />

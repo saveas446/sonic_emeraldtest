@@ -18,6 +18,7 @@
 #include "i_system.h"
 #include "d_event.h"
 #include "d_net.h"
+#include "g_battle.h"
 #include "g_game.h"
 #include "p_local.h"
 #include "r_main.h"

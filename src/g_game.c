@@ -26,6 +26,7 @@
 #include "r_draw.h"
 #include "r_main.h"
 #include "s_sound.h"
+#include "g_battle.h"
 #include "g_game.h"
 #include "m_cheat.h"
 #include "m_misc.h"
@@ -94,6 +95,9 @@ boolean runemeraldmanager = false;
 // BATTLE STUFF
 boolean battle; // Are we in a battle?
 boolean canmove; // Are we moving around or selecting UI?
+menu_t* currentbattlemenu = &BattleMainMenuDef;
+UINT8 itemon_battle = 0; 
+mobj_t* battletarget = NULL;
 
 // menu demo things
 UINT8  numDemos      = 3;
@@ -1016,6 +1020,10 @@ static fixed_t angleturn[3] = {640, 1280, 320}; // + slow turn
 
 // Used to detect if we've pressed fire
 boolean fire_lastframe;
+boolean up_lastframe;
+boolean down_lastframe;
+boolean select_lastframe;
+boolean back_lastframe;
 
 void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 {
@@ -1026,6 +1034,7 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 	boolean turnleft, turnright, mouseaiming, analogjoystickmove, gamepadjoystickmove, thisjoyaiming;
 	player_t *player = &players[consoleplayer];
 	camera_t *thiscam = &camera;
+	void (*routine)(INT32 choice); // for some casting problem
 
 	static INT32 turnheld; // for accelerative turning
 	static boolean keyboard_look; // true if lookup/down using keyboard
@@ -1172,18 +1181,69 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 			break;
 		}
 
-	// fire with any button/key
-	axis = JoyAxis(AXISFIRE);
-	if ((PLAYER1INPUTDOWN(gc_fire) && !fire_lastframe) && battle) {
-		// I'm sorry.
-		if (canmove)
-			canmove = false;
-		else
-			canmove = true;
 
+	if (gamestate == GS_LEVEL) {
+		// fire with any button/key
+		axis = JoyAxis(AXISFIRE);
+		if ((PLAYER1INPUTDOWN(gc_fire) && !fire_lastframe) && battle) {
+			// I'm sorry.
+			if (canmove)
+				canmove = false;
+			else
+				canmove = true;
+		}
+
+		// Ohhh god this is bad but min was behaving weird :(
+		if ((PLAYER1INPUTDOWN(gc_forward) && !up_lastframe) && battle && !canmove) {
+			if (itemon_battle == 0)
+				itemon_battle = currentbattlemenu->numitems - 1;
+			else
+				itemon_battle--;
+		}
+			
+
+		if ((PLAYER1INPUTDOWN(gc_backward) && !down_lastframe) && battle && !canmove) {
+			if (itemon_battle >= currentbattlemenu->numitems - 1)
+				itemon_battle = 0;
+			else
+				itemon_battle++;
+		}
+
+
+		// Select in menu
+		if ((PLAYER1INPUTDOWN(gc_jump) && !select_lastframe) && battle && !canmove) {
+			switch (currentbattlemenu->menuitems[itemon_battle].status & IT_TYPE)
+			{
+				case IT_CALL:
+				routine = currentbattlemenu->menuitems[itemon_battle].itemaction;
+				routine(67); // I don't know what to put here, placeholder for now 
+				break;
+				case IT_SUBMENU:
+				currentbattlemenu->lastOn = itemon_battle; // Save cursor position
+				currentbattlemenu = (menu_t*)currentbattlemenu->menuitems[itemon_battle].itemaction;
+				itemon_battle = currentbattlemenu->lastOn; // Restore cursor position
+				break;
+				default:
+				break;
+			}
+		}
+
+		// Go back in menu
+		if ((PLAYER1INPUTDOWN(gc_use) && !back_lastframe) && battle && !canmove) {
+			if (currentbattlemenu->prevMenu != NULL) {
+				currentbattlemenu = currentbattlemenu->prevMenu;
+				itemon_battle = currentbattlemenu->lastOn; // Restore cursor position
+			}
+		}
+
+
+		fire_lastframe = PLAYER1INPUTDOWN(gc_fire);
+		up_lastframe = PLAYER1INPUTDOWN(gc_forward);
+		down_lastframe = PLAYER1INPUTDOWN(gc_backward);
+		select_lastframe = PLAYER1INPUTDOWN(gc_jump);
+		back_lastframe = PLAYER1INPUTDOWN(gc_use);
 	}
-	fire_lastframe = PLAYER1INPUTDOWN(gc_fire);
-		
+
 	// Disable movement if you're selecting battle UI
 	if (!(battle && !canmove)) {
 		// fire normal with any button/key

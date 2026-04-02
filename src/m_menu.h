@@ -304,4 +304,8 @@ void Addons_option_Onchange(void);
 	NULL\
 }
 
+// BATTLE MENU STUFF
+
+extern menu_t BattleMainMenuDef;
+
 #endif //__X_MENU__
