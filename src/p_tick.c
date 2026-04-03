@@ -12,12 +12,14 @@
 /// \brief Archiving: SaveGame I/O, Thinker, Ticker
 
 #include "doomstat.h"
+#include "g_battle.h"
 #include "g_game.h"
 #include "p_local.h"
 #include "z_zone.h"
 #include "s_sound.h"
 #include "st_stuff.h"
 #include "p_polyobj.h"
+#include "r_main.h"
 #include "m_random.h"
 #include "lua_script.h"
 #include "lua_hook.h"
@@ -604,6 +606,38 @@ void P_Ticker(boolean run)
 		for (i = 0; i < MAXPLAYERS; i++)
 			if (playeringame[i] && players[i].mo && !P_MobjWasRemoved(players[i].mo))
 				P_PlayerThink(&players[i]);
+	}
+	
+	if (moveanim_step == 1) {
+		switch (moveanim) {
+			case MOVEANIM_STROLL:
+			// Yes I'm recalculating the angle every frame. Cry about it
+			moveanim_source->angle = R_PointToAngle2(moveanim_source->x, moveanim_source->y, moveanim_target->x, moveanim_target->y);
+			P_Thrust(moveanim_source, moveanim_source->angle, mobjinfo[moveanim_source->type].mass*1441);
+			break;
+			default:
+			break;
+		}
+	}
+	if (moveanim_step == 2) {
+		switch (moveanim) {
+			case MOVEANIM_STROLL:
+			// Go back to where you came!
+			moveanim_source->angle = R_PointToAngle2(moveanim_source->x, moveanim_source->y, moveanim_source->originalpos[0], moveanim_source->originalpos[1]);
+			P_Thrust(moveanim_source, moveanim_source->angle, mobjinfo[moveanim_source->type].mass*1441);
+
+			if (R_PointToDist2(moveanim_source->x, moveanim_source->y, moveanim_source->originalpos[0], moveanim_source->originalpos[1]) < 24*FRACUNIT) {
+				// End move animation
+				moveanim_source->x = moveanim_source->originalpos[0];
+				moveanim_source->y = moveanim_source->originalpos[1];
+				moveanim_source->angle = moveanim_source->originalangle;
+				moveanim_step = 0;
+				moveanim = MOVEANIM_NONE;
+			}
+			break;
+			default:
+			break;
+		}
 	}
 
 	// Keep track of how long they've been playing!

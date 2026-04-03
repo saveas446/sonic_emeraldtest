@@ -13,6 +13,7 @@
 ///        Action Pointer Functions that are associated with states/frames
 
 #include "doomdef.h"
+#include "g_battle.h"
 #include "g_game.h"
 #include "p_local.h"
 #include "r_main.h"
@@ -10169,8 +10170,10 @@ void A_CrawlaBattle(mobj_t *actor)
 		return;
 #endif
 
-	// Damage player every 40 tics or so :3
-	if (P_RandomRange(1, 40) == 1) {
-		P_DamageMobj(actor->target, actor, actor, P_RandomRange(6, 12));
+	if (!moveanim_step) {
+		// Damage player every 90 tics or so :3
+		if (P_RandomRange(1, 90) == 1) {
+			P_Attack(actor, actor->target);
+		}
 	}
 }

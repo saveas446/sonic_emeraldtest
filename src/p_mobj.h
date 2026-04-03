@@ -350,6 +350,9 @@ typedef struct mobj_s
 	fixed_t destscale;
 	fixed_t scalespeed;
 
+	fixed_t originalpos[2];
+	angle_t originalangle;
+
 	// Extra values are for internal use for whatever you want
 	INT32 extravalue1;
 	INT32 extravalue2;
@@ -451,7 +454,8 @@ void P_SetScale(mobj_t *mobj, fixed_t newscale);
 void P_XYMovement(mobj_t *mo);
 void P_EmeraldManager(void);
 void P_EnterBattle(mobj_t* player, mobj_t* enemy);
-void P_Attack(void);
+void P_PlayerAttack(void);
+void P_Attack(mobj_t* source, mobj_t* target);
 
 #define MAXHUNTEMERALDS 64
 extern mapthing_t *huntemeralds[MAXHUNTEMERALDS];

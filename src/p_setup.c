@@ -2691,6 +2691,7 @@ boolean P_SetupLevel(boolean skipprecip)
 	// Battles should not persist across maps
 	battle = false;
 	canmove = true;
+	moveanim_step = 0;
 
 	// This is needed. Don't touch.
 	maptol = mapheaderinfo[gamemap-1]->typeoflevel;

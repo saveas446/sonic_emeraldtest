@@ -2930,7 +2930,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 
 	player = target->player;
 
-	if (player) // Player is the target
+	/*if (player) // Player is the target
 	{
 		if (!force)
 		{
@@ -3089,7 +3089,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 		P_HitDeathMessages(player, inflictor, source);
 
 		P_ForceFeed(player, 40, 10, TICRATE, 40 + min(damage, 100)*2);
-	}
+	}*/
 
 	// Killing dead. Just for kicks.
 	// Require source and inflictor be player.  Don't hurt for firing rings.

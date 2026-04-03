@@ -804,10 +804,10 @@ void P_DoPlayerPain(player_t *player, mobj_t *source, mobj_t *inflictor)
 	else
 		player->mo->z++;
 
-	if (player->mo->eflags & MFE_UNDERWATER)
+	/*if (player->mo->eflags & MFE_UNDERWATER)
 		P_SetObjectMomZ(player->mo, FixedDiv(10511*FRACUNIT,2600*FRACUNIT), false);
 	else
-		P_SetObjectMomZ(player->mo, FixedDiv(69*FRACUNIT,10*FRACUNIT), false);
+		P_SetObjectMomZ(player->mo, FixedDiv(69*FRACUNIT,10*FRACUNIT), false);*/
 
 	if (inflictor)
 	{
@@ -844,7 +844,7 @@ void P_DoPlayerPain(player_t *player, mobj_t *source, mobj_t *inflictor)
 		fallbackspeed = FixedMul(4*FRACUNIT, player->mo->scale);
 	}
 
-	P_InstaThrust(player->mo, ang, fallbackspeed);
+	//P_InstaThrust(player->mo, ang, fallbackspeed);
 
 	if (player->pflags & PF_ROPEHANG)
 		P_SetTarget(&player->mo->tracer, NULL);
@@ -9030,7 +9030,7 @@ void P_PlayerThink(player_t *player)
 	if (!player->mo) {
 		return; // P_MovePlayer removed player->mo.
 	} else {
-		if (battle) {
+		if (battle && !moveanim_step) {
 			// Max 3 rotations of the gauge
 			player->battlegauge = min(player->battlegauge + 2, 360*3);
 		}
@@ -9581,10 +9581,9 @@ void P_PlayerAfterThink(player_t *player)
 		player->mo->pmomz = 0;
 }
 
-void P_Attack(void)
+void P_PlayerAttack(void)
 {
 	if (players[displayplayer].battlegauge > 360) {
-		players[displayplayer].battlegauge = max(0, players[displayplayer].battlegauge - 360); // Don't go below 0
-		P_DamageMobj(battletarget, NULL, players[displayplayer].mo, P_RandomRange(15, 25));
+		P_Attack(players[displayplayer].mo, battletarget);
 	}
 }

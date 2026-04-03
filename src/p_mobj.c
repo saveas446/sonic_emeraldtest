@@ -10457,3 +10457,17 @@ void P_FlashPal(player_t *pl, UINT16 type, UINT16 duration)
 	pl->flashcount = duration;
 	pl->flashpal = type;
 }
+
+
+void P_Attack(mobj_t* source, mobj_t* target) {
+	moveanim = MOVEANIM_STROLL;
+	moveanim_step = 1;
+
+	// WE NEEDETH THIS!! WE SHALT RETURN TO THIS POSITION LATERE!!!
+	source->originalpos[0] = source->x;
+	source->originalpos[1] = source->y;
+	source->originalangle = source->angle;
+
+	moveanim_source = source;
+	moveanim_target = target;
+}

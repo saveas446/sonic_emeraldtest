@@ -14,6 +14,7 @@
 ///	Shooting and aiming
 
 #include "doomdef.h"
+#include "g_battle.h"
 #include "g_game.h"
 #include "m_bbox.h"
 #include "m_random.h"
@@ -786,6 +787,31 @@ static boolean PIT_CheckThing(mobj_t *thing)
 		}
 		droneobj->extravalue1 = pl->flyangle;
 		droneobj->extravalue2 = (INT32)leveltime + TICRATE;
+	}
+
+	// If we're touching the battletarget during the stroll animation, move on to the next step
+	if (moveanim_step == 1 && thing == moveanim_target && moveanim == MOVEANIM_STROLL && tmthing == moveanim_source)
+	{
+		int dmg_min, dmg_max;
+
+		// Damage enemy, if we're a player deplete the battle gauge
+		if (tmthing->player)
+			tmthing->player->battlegauge = max(0, tmthing->player->battlegauge - 360); // Don't go below 0
+
+		// Set damage amount based on mobj type
+		switch (moveanim_source->type) {
+			case MT_PLAYER:
+			dmg_min = 15;
+			dmg_max = 25;
+			case MT_BLUECRAWLA:
+			default:
+			dmg_min = 6;
+			dmg_max = 12;
+		}
+
+		P_DamageMobj(moveanim_target, NULL, tmthing, P_RandomRange(dmg_min, dmg_max));
+
+		moveanim_step = 2;
 	}
 
 	/*// check for special pickup

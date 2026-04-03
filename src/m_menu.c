@@ -8047,7 +8047,7 @@ menu_t BattleMainMenuDef = {
 };
 
 void M_Attack(int ch) {
-	P_Attack();
+	P_PlayerAttack();
 	currentbattlemenu = &BattleMainMenuDef;
 }
 

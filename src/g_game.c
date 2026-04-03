@@ -98,6 +98,10 @@ boolean canmove; // Are we moving around or selecting UI?
 menu_t* currentbattlemenu = &BattleMainMenuDef;
 UINT8 itemon_battle = 0; 
 mobj_t* battletarget = NULL;
+UINT8 moveanim_step = 0;
+moveanim_t moveanim = MOVEANIM_NONE;
+mobj_t* moveanim_source;
+mobj_t* moveanim_target;
 
 // menu demo things
 UINT8  numDemos      = 3;
@@ -1142,32 +1146,34 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 		side += ((axis * sidemove[1]) >> 10);
 	}
 
-	// forward with key or button
-	axis = JoyAxis(AXISMOVE);
-	altaxis = JoyAxis(AXISLOOK);
-	if (PLAYER1INPUTDOWN(gc_forward) || (gamepadjoystickmove && axis < 0)
-		|| ((player->pflags & PF_NIGHTSMODE)
-			&& (PLAYER1INPUTDOWN(gc_lookup) || (gamepadjoystickmove && altaxis < 0))))
-		forward = forwardmove[speed];
-	if (PLAYER1INPUTDOWN(gc_backward) || (gamepadjoystickmove && axis > 0)
-		|| ((player->pflags & PF_NIGHTSMODE)
-			&& (PLAYER1INPUTDOWN(gc_lookdown) || (gamepadjoystickmove && altaxis > 0))))
-		forward -= forwardmove[speed];
+	if (!((battle && !canmove) || moveanim_step)) {
+		// forward with key or button
+		axis = JoyAxis(AXISMOVE);
+		altaxis = JoyAxis(AXISLOOK);
+		if (PLAYER1INPUTDOWN(gc_forward) || (gamepadjoystickmove && axis < 0)
+			|| ((player->pflags & PF_NIGHTSMODE)
+				&& (PLAYER1INPUTDOWN(gc_lookup) || (gamepadjoystickmove && altaxis < 0))))
+			forward = forwardmove[speed];
+		if (PLAYER1INPUTDOWN(gc_backward) || (gamepadjoystickmove && axis > 0)
+			|| ((player->pflags & PF_NIGHTSMODE)
+				&& (PLAYER1INPUTDOWN(gc_lookdown) || (gamepadjoystickmove && altaxis > 0))))
+			forward -= forwardmove[speed];
 
-	if (analogjoystickmove && axis != 0)
-		forward -= ((axis * forwardmove[1]) >> 10); // ANALOG!
+		if (analogjoystickmove && axis != 0)
+			forward -= ((axis * forwardmove[1]) >> 10); // ANALOG!
 
-	// some people strafe left & right with mouse buttons
-	// those people are weird
-	if (PLAYER1INPUTDOWN(gc_straferight))
-		side += sidemove[speed];
-	if (PLAYER1INPUTDOWN(gc_strafeleft))
-		side -= sidemove[speed];
+		// some people strafe left & right with mouse buttons
+		// those people are weird
+		if (PLAYER1INPUTDOWN(gc_straferight))
+			side += sidemove[speed];
+		if (PLAYER1INPUTDOWN(gc_strafeleft))
+			side -= sidemove[speed];
 
-	if (PLAYER1INPUTDOWN(gc_weaponnext))
-		cmd->buttons |= BT_WEAPONNEXT; // Next Weapon
-	if (PLAYER1INPUTDOWN(gc_weaponprev))
-		cmd->buttons |= BT_WEAPONPREV; // Previous Weapon
+		if (PLAYER1INPUTDOWN(gc_weaponnext))
+			cmd->buttons |= BT_WEAPONNEXT; // Next Weapon
+		if (PLAYER1INPUTDOWN(gc_weaponprev))
+			cmd->buttons |= BT_WEAPONPREV; // Previous Weapon
+	}
 
 #if NUM_WEAPONS > 10
 "Add extra inputs to g_input.h/gamecontrols_e"
@@ -1183,59 +1189,60 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 
 
 	if (gamestate == GS_LEVEL) {
-		// fire with any button/key
-		axis = JoyAxis(AXISFIRE);
-		if ((PLAYER1INPUTDOWN(gc_fire) && !fire_lastframe) && battle) {
-			// I'm sorry.
-			if (canmove)
-				canmove = false;
-			else
-				canmove = true;
-		}
+		if (!moveanim_step) {
+			// fire with any button/key
+			axis = JoyAxis(AXISFIRE);
+			if ((PLAYER1INPUTDOWN(gc_fire) && !fire_lastframe) && battle) {
+				// I'm sorry.
+				if (canmove)
+					canmove = false;
+				else
+					canmove = true;
+			}
 
-		// Ohhh god this is bad but min was behaving weird :(
-		if ((PLAYER1INPUTDOWN(gc_forward) && !up_lastframe) && battle && !canmove) {
-			if (itemon_battle == 0)
-				itemon_battle = currentbattlemenu->numitems - 1;
-			else
-				itemon_battle--;
-		}
-			
+			// Ohhh god this is bad but min was behaving weird :(
+			if ((PLAYER1INPUTDOWN(gc_forward) && !up_lastframe) && battle && !canmove) {
+				if (itemon_battle == 0)
+					itemon_battle = currentbattlemenu->numitems - 1;
+				else
+					itemon_battle--;
+			}
+				
 
-		if ((PLAYER1INPUTDOWN(gc_backward) && !down_lastframe) && battle && !canmove) {
-			if (itemon_battle >= currentbattlemenu->numitems - 1)
-				itemon_battle = 0;
-			else
-				itemon_battle++;
-		}
+			if ((PLAYER1INPUTDOWN(gc_backward) && !down_lastframe) && battle && !canmove) {
+				if (itemon_battle >= currentbattlemenu->numitems - 1)
+					itemon_battle = 0;
+				else
+					itemon_battle++;
+			}
 
 
-		// Select in menu
-		if ((PLAYER1INPUTDOWN(gc_jump) && !select_lastframe) && battle && !canmove) {
-			switch (currentbattlemenu->menuitems[itemon_battle].status & IT_TYPE)
-			{
-				case IT_CALL:
-				routine = currentbattlemenu->menuitems[itemon_battle].itemaction;
-				routine(67); // I don't know what to put here, placeholder for now 
-				break;
-				case IT_SUBMENU:
-				currentbattlemenu->lastOn = itemon_battle; // Save cursor position
-				currentbattlemenu = (menu_t*)currentbattlemenu->menuitems[itemon_battle].itemaction;
-				itemon_battle = currentbattlemenu->lastOn; // Restore cursor position
-				break;
-				default:
-				break;
+			// Select in menu
+			if ((PLAYER1INPUTDOWN(gc_jump) && !select_lastframe) && battle && !canmove) {
+				switch (currentbattlemenu->menuitems[itemon_battle].status & IT_TYPE)
+				{
+					case IT_CALL:
+					routine = currentbattlemenu->menuitems[itemon_battle].itemaction;
+					routine(67); // I don't know what to put here, placeholder for now 
+					break;
+					case IT_SUBMENU:
+					currentbattlemenu->lastOn = itemon_battle; // Save cursor position
+					currentbattlemenu = (menu_t*)currentbattlemenu->menuitems[itemon_battle].itemaction;
+					itemon_battle = currentbattlemenu->lastOn; // Restore cursor position
+					break;
+					default:
+					break;
+				}
+			}
+
+			// Go back in menu
+			if ((PLAYER1INPUTDOWN(gc_use) && !back_lastframe) && battle && !canmove) {
+				if (currentbattlemenu->prevMenu != NULL) {
+					currentbattlemenu = currentbattlemenu->prevMenu;
+					itemon_battle = currentbattlemenu->lastOn; // Restore cursor position
+				}
 			}
 		}
-
-		// Go back in menu
-		if ((PLAYER1INPUTDOWN(gc_use) && !back_lastframe) && battle && !canmove) {
-			if (currentbattlemenu->prevMenu != NULL) {
-				currentbattlemenu = currentbattlemenu->prevMenu;
-				itemon_battle = currentbattlemenu->lastOn; // Restore cursor position
-			}
-		}
-
 
 		fire_lastframe = PLAYER1INPUTDOWN(gc_fire);
 		up_lastframe = PLAYER1INPUTDOWN(gc_forward);
@@ -1248,8 +1255,8 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 			battle = false;
 	}
 
-	// Disable movement if you're selecting battle UI
-	if (!(battle && !canmove)) {
+	if (!((battle && !canmove) || moveanim_step)) {
+		// Disable movement if you're selecting battle UI
 		// fire normal with any button/key
 		axis = JoyAxis(AXISFIRENORMAL);
 		if (PLAYER1INPUTDOWN(gc_firenormal) || (cv_usejoystick.value && axis > 0))
@@ -1344,7 +1351,6 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 				cmd->aiming = G_ClipAimingPitch(&localaiming);
 			}
 
-	if (!(battle && !canmove)) {
 		if (!mouseaiming && cv_mousemove.value)
 			forward += mousey;
 
@@ -1395,7 +1401,6 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 			localangle += (cmd->angleturn<<16);
 			cmd->angleturn = (INT16)(localangle >> 16);
 		}
-	}
 
 	//Reset away view if a command is given.
 	if ((cmd->forwardmove || cmd->sidemove || cmd->buttons)
