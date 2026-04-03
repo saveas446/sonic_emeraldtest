@@ -3034,7 +3034,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 		}
 		else if (player->mo->health > 1) // No shield but have rings.
 		{
-			damage = player->mo->health - 1;
+			//damage = player->mo->health - 1;
 			P_RingDamage(player, inflictor, source, damage);
 		}
 		else // No shield, no rings, no invincibility.

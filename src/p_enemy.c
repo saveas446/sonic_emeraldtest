@@ -10149,3 +10149,28 @@ void A_SpawnFreshCopy(mobj_t *actor)
 	if (newObject->info->seesound)
 		S_StartSound(newObject, newObject->info->seesound);
 }
+
+// Function: A_CrawlaBattle
+//
+// Description: Damage player and try to kill them! (Crawla AI)
+//
+// var1:
+//		lower 16 bits = look all around
+//		upper 16 bits = distance limit
+// var2 = If 1, only change to seestate. If 2, only play seesound. If 0, do both.
+//
+void A_CrawlaBattle(mobj_t *actor)
+{
+	INT32 locvar1 = var1;
+	INT32 locvar2 = var2;
+
+#ifdef HAVE_BLUA
+	if (LUA_CallAction("A_CrawlaBattle", actor))
+		return;
+#endif
+
+	// Damage player every 40 tics or so :3
+	if (P_RandomRange(1, 40) == 1) {
+		P_DamageMobj(actor->target, actor, actor, P_RandomRange(6, 12));
+	}
+}

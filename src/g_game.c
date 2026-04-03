@@ -1242,6 +1242,10 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 		down_lastframe = PLAYER1INPUTDOWN(gc_backward);
 		select_lastframe = PLAYER1INPUTDOWN(gc_jump);
 		back_lastframe = PLAYER1INPUTDOWN(gc_use);
+
+		// End battle
+		if (battle && battletarget->health < 1)
+			battle = false;
 	}
 
 	// Disable movement if you're selecting battle UI
@@ -2341,7 +2345,7 @@ void G_PlayerReborn(INT32 player)
 	p->pflags |= PF_JUMPDOWN;
 
 	p->playerstate = PST_LIVE;
-	p->health = 1; // 0 rings
+	p->health = mobjinfo[MT_PLAYER].spawnhealth; // Spawn health
 	p->panim = PA_IDLE; // standing animation
 
 	if ((netgame || multiplayer) && !p->spectator)

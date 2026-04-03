@@ -152,12 +152,7 @@ state_t states[NUMSTATES] =
 
 	// Blue Crawla
 	{SPR_POSS, 0, 5, {A_Look}, 0, 0, S_POSS_STND},   // S_POSS_STND
-	{SPR_POSS, 0, 3, {A_Chase}, 0, 0, S_POSS_RUN2},   // S_POSS_RUN1
-	{SPR_POSS, 1, 3, {A_Chase}, 0, 0, S_POSS_RUN3},   // S_POSS_RUN2
-	{SPR_POSS, 2, 3, {A_Chase}, 0, 0, S_POSS_RUN4},   // S_POSS_RUN3
-	{SPR_POSS, 3, 3, {A_Chase}, 0, 0, S_POSS_RUN5},   // S_POSS_RUN4
-	{SPR_POSS, 4, 3, {A_Chase}, 0, 0, S_POSS_RUN6},   // S_POSS_RUN5
-	{SPR_POSS, 5, 3, {A_Chase}, 0, 0, S_POSS_RUN1},   // S_POSS_RUN6
+	{SPR_POSS, 1, 1, {A_CrawlaBattle}, 0, 0, S_POSS_BATL},   // S_POSS_BATL
 
 	// Red Crawla
 	{SPR_SPOS, 0, 5, {A_Look}, 0, 0, S_SPOS_STND},   // S_SPOS_STND
@@ -2573,7 +2568,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	{           // MT_PLAYER
 		-1,             // doomednum
 		S_PLAY_STND,    // spawnstate
-		1,              // spawnhealth
+		100,            // spawnhealth
 		S_PLAY_RUN1,    // seestate
 		sfx_None,       // seesound
 		0,              // reactiontime
@@ -2600,12 +2595,12 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	{           // MT_BLUECRAWLA
 		100,            // doomednum
 		S_POSS_STND,    // spawnstate
-		1,              // spawnhealth
-		S_POSS_RUN1,    // seestate
+		50,              // spawnhealth
+		S_POSS_BATL,    // seestate
 		sfx_None,       // seesound
 		32,             // reactiontime
 		sfx_None,       // attacksound
-		S_NULL,         // painstate
+		S_POSS_BATL,    // painstate
 		200,            // painchance
 		sfx_None,       // painsound
 		S_NULL,         // meleestate

@@ -34,3 +34,4 @@ Win32_LIB_ASM_Release
 
 !/bin/VC10/*.dta
 !/bin/VC10/*.srb
+*.gif

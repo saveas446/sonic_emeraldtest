@@ -9580,3 +9580,11 @@ void P_PlayerAfterThink(player_t *player)
 	if (P_IsObjectOnGround(player->mo))
 		player->mo->pmomz = 0;
 }
+
+void P_Attack(void)
+{
+	if (players[displayplayer].battlegauge > 360) {
+		players[displayplayer].battlegauge = max(0, players[displayplayer].battlegauge - 360); // Don't go below 0
+		P_DamageMobj(battletarget, NULL, players[displayplayer].mo, P_RandomRange(15, 25));
+	}
+}

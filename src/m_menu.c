@@ -24,6 +24,7 @@
 #include "console.h"
 #include "r_local.h"
 #include "hu_stuff.h"
+#include "g_battle.h"
 #include "g_game.h"
 #include "g_input.h"
 #include "m_argv.h"
@@ -42,6 +43,7 @@
 #include "z_zone.h"
 #include "w_wad.h"
 #include "p_local.h"
+#include "p_mobj.h"
 #include "p_setup.h"
 #include "f_finale.h"
 
@@ -8045,12 +8047,13 @@ menu_t BattleMainMenuDef = {
 };
 
 void M_Attack(int ch) {
-	CONS_Printf("testing testing 1 2 3\n");
+	P_Attack();
+	currentbattlemenu = &BattleMainMenuDef;
 }
 
 static menuitem_t AttackMenu[] =
 {
-	{IT_CALL|IT_STRING, NULL, "Placeholder", M_Attack, 140}
+	{IT_CALL|IT_STRING, NULL, "Spin Slash", M_Attack, 140}
 };
 
 menu_t AttackMenuDef = { 

@@ -208,6 +208,7 @@ void A_BrakFireShot();
 void A_BrakLobShot();
 void A_NapalmScatter();
 void A_SpawnFreshCopy();
+void A_CrawlaBattle();
 
 // ratio of states to sprites to mobj types is roughly 6 : 1 : 1
 #define NUMMOBJFREESLOTS 512
@@ -663,12 +664,7 @@ typedef enum state
 
 	// Blue Crawla
 	S_POSS_STND,
-	S_POSS_RUN1,
-	S_POSS_RUN2,
-	S_POSS_RUN3,
-	S_POSS_RUN4,
-	S_POSS_RUN5,
-	S_POSS_RUN6,
+	S_POSS_BATL,
 
 	// Red Crawla
 	S_SPOS_STND,
