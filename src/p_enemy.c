@@ -10169,11 +10169,15 @@ void A_CrawlaBattle(mobj_t *actor)
 	if (LUA_CallAction("A_CrawlaBattle", actor))
 		return;
 #endif
-
 	if (!moveanim_step) {
-		// Damage player every 90 tics or so :3
-		if (P_RandomRange(1, 90) == 1) {
-			P_Attack(actor, actor->target);
+		if (R_PointToDist2(actor->x, actor->y, actor->target->x, actor->target->y) > 200*FRACUNIT) {
+			// If we're too far away to damage, get closer!
+			A_Chase(actor);
+		} else {
+			// If we're close enough, damage player with a 1 in 70 chance every tic
+			if (P_RandomRange(1, 70) == 1) {
+				P_Attack(actor, actor->target);
+			}
 		}
 	}
 }

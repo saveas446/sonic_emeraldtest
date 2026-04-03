@@ -1790,8 +1790,7 @@ static void ST_overlayDrawer(void)
 	} else {
 		if (!moveanim_step) {
 			V_DrawRightAlignedString(BASEVIDWIDTH, 152, 0, va("BATTLE GAUGE: %d", stplyr->battlegauge));
-			V_DrawRightAlignedString(BASEVIDWIDTH, 160, 0, va("SELECT: %d", canmove));
-			V_DrawRightAlignedString(BASEVIDWIDTH, 168, 0, va("ITEMON: %d", itemon_battle));
+			V_DrawRightAlignedString(BASEVIDWIDTH, 160, 0, va("DIST: %d", R_PointToDist2(stplyr->mo->x, stplyr->mo->y, battletarget->x, battletarget->y) >> FRACBITS));
 			V_DrawRightAlignedString(BASEVIDWIDTH, 172, 0, va("HEALTH: %d", stplyr->mo->health));
 			V_DrawRightAlignedString(BASEVIDWIDTH, 180, 0, va("ENEMYH: %d", battletarget->health));
 

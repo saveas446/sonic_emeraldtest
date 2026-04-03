@@ -1251,7 +1251,7 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 		back_lastframe = PLAYER1INPUTDOWN(gc_use);
 
 		// End battle
-		if (battle && battletarget->health < 1)
+		if (battle && battletarget && battletarget->health < 1)
 			battle = false;
 	}
 

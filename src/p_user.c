@@ -9583,7 +9583,8 @@ void P_PlayerAfterThink(player_t *player)
 
 void P_PlayerAttack(void)
 {
-	if (players[displayplayer].battlegauge > 360) {
+	// If battlegauge > 360 and the distance is less than 200 FRACUNITs
+	if (players[displayplayer].battlegauge > 360 && R_PointToDist2(players[displayplayer].mo->x, players[displayplayer].mo->y, battletarget->x, battletarget->y) < 200*FRACUNIT) {
 		P_Attack(players[displayplayer].mo, battletarget);
 	}
 }
