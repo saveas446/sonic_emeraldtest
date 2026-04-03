@@ -455,6 +455,8 @@ void P_XYMovement(mobj_t *mo);
 void P_EmeraldManager(void);
 void P_EnterBattle(mobj_t* player, mobj_t* enemy);
 void P_PlayerAttack(void);
+void P_PlayerCPAttack(void);
+void P_PlayerEscape(void);
 void P_Attack(mobj_t* source, mobj_t* target);
 
 #define MAXHUNTEMERALDS 64

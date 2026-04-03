@@ -2595,7 +2595,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	{           // MT_BLUECRAWLA
 		100,            // doomednum
 		S_POSS_STND,    // spawnstate
-		40,             // spawnhealth
+		50,             // spawnhealth
 		S_POSS_BATL,    // seestate
 		sfx_None,       // seesound
 		32,             // reactiontime

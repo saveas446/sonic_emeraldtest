@@ -9588,3 +9588,56 @@ void P_PlayerAttack(void)
 		P_Attack(players[displayplayer].mo, battletarget);
 	}
 }
+
+void P_PlayerCPAttack(void)
+{
+	if (players[displayplayer].battlegauge > 720) {
+		// Heal yo'self!
+
+		// Just don't bother if we have all our HP
+		if (players[displayplayer].mo->health >= mobjinfo[players[displayplayer].mo->type].spawnhealth)
+			return;
+
+		// Make sure we don't go over the spawnhealth, when we implement leveling up we're going to need to do something else
+		players[displayplayer].mo->health = min(mobjinfo[players[displayplayer].mo->type].spawnhealth, players[displayplayer].mo->health + P_RandomRange(15, 20));
+
+		players[displayplayer].battlegauge = max(0, players[displayplayer].battlegauge - 720); // Drain battle gauge
+	}
+}
+
+void P_PlayerEscape(void)
+{
+	UINT8 chance;
+
+	CONS_Printf("Trying to escape\n");
+
+	// 300+: 10% chance
+	// 400+: 40% chance
+	// 500+: 60% chance
+	// 600+: 80% chance
+	// This will be adjusted for different enemies when we come up with them
+
+	chance = 0;
+
+	// Ts code actually SO bad
+	if (R_PointToDist2(players[displayplayer].mo->x, players[displayplayer].mo->y, battletarget->x, battletarget->y) > 300*FRACUNIT)
+		chance = 10;
+
+	if (R_PointToDist2(players[displayplayer].mo->x, players[displayplayer].mo->y, battletarget->x, battletarget->y) > 400*FRACUNIT)
+		chance = 40;
+
+	if (R_PointToDist2(players[displayplayer].mo->x, players[displayplayer].mo->y, battletarget->x, battletarget->y) > 500*FRACUNIT)
+		chance = 60;
+
+	if (R_PointToDist2(players[displayplayer].mo->x, players[displayplayer].mo->y, battletarget->x, battletarget->y) > 600*FRACUNIT)
+		chance = 80;
+
+	if (P_RandomRange(1, 100) < chance) {
+		CONS_Printf("Escape successful!\n");
+		battle = false; // Set battle to false
+		P_SetMobjState(battletarget, mobjinfo[battletarget->type].spawnstate); // Calm down whoever you were battling
+		battletarget = NULL;  // There is no target anymore!
+	} else {
+		CONS_Printf("Escape failed!\n");
+	}
+}
