@@ -128,8 +128,8 @@ static boolean facefreed[MAXPLAYERS];
 
 hudinfo_t hudinfo[NUMHUDITEMS] =
 {
-	{  34, 176}, // HUD_LIVESNAME
-	{  16, 176}, // HUD_LIVESPIC
+	{  18, 0}, // HUD_LIVESNAME
+	{  0, 0}, // HUD_LIVESPIC
 	{  74, 184}, // HUD_LIVESNUM
 	{  38, 186}, // HUD_LIVESX
 
@@ -720,12 +720,15 @@ static void ST_drawLives(void)
 	else
 		V_DrawString(hudinfo[HUD_LIVESNAME].x, hudinfo[HUD_LIVESNAME].y + (v_splitflag ? -12 : 0),
 			V_HUDTRANS|V_SNAPTOLEFT|V_SNAPTOBOTTOM|V_MONOSPACE|V_YELLOWMAP|v_splitflag, skins[stplyr->skin].hudname);
+	
+	// This is not a platformer, there are no lives
+	/*
 	// x
 	V_DrawScaledPatch(hudinfo[HUD_LIVESX].x, hudinfo[HUD_LIVESX].y + (v_splitflag ? -4 : 0),
 		V_SNAPTOLEFT|V_SNAPTOBOTTOM|V_HUDTRANS|v_splitflag, stlivex);
 	// lives
 	V_DrawRightAlignedString(hudinfo[HUD_LIVESNUM].x, hudinfo[HUD_LIVESNUM].y + (v_splitflag ? -4 : 0),
-		V_SNAPTOLEFT|V_SNAPTOBOTTOM|V_HUDTRANS|v_splitflag, va("%d",stplyr->lives));
+		V_SNAPTOLEFT|V_SNAPTOBOTTOM|V_HUDTRANS|v_splitflag, va("%d",stplyr->lives));*/
 }
 
 static void ST_drawLevelTitle(void)
@@ -1764,27 +1767,21 @@ static void ST_overlayDrawer(void)
 			ST_drawNiGHTSHUD();
 		else
 		{
-			V_DrawString(0, 0, 0, "PLACEHOLDER HUD");
-/*
-#ifdef HAVE_BLUA
-			if (LUA_HudEnabled(hud_score))
-#endif
-			ST_drawScore();
-#ifdef HAVE_BLUA
-			if (LUA_HudEnabled(hud_time))
-#endif
-			ST_drawTime();
-#ifdef HAVE_BLUA
-			if (LUA_HudEnabled(hud_rings))
-#endif
-			ST_drawRings();
 			if (G_GametypeUsesLives()
-#ifdef HAVE_BLUA
+			#ifdef HAVE_BLUA
 			&& LUA_HudEnabled(hud_lives)
-#endif
+			#endif
 			)
-				ST_drawLives();
-*/
+			ST_drawLives();
+
+			UINT16 xpcap = 100;
+
+			// Multiply by 1.25 for every level
+			for (int i = 1; i < players[displayplayer].level; i++)
+				xpcap += xpcap >> 2; 
+
+			V_DrawString(18, 8, 0, va("XP: %d/%d", stplyr->xp, xpcap));
+			V_DrawString(18, 16, 0, va("LV: %d", stplyr->level));
 		}
 	// In-battle HUD
 	} else {

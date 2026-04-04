@@ -3184,6 +3184,12 @@ boolean P_SetupLevel(boolean skipprecip)
 #endif
 	}
 
+	// Just reset all party members to Level 1 with 0 XP for now
+	for (i = 0; i < MAXPLAYERS; i++) {
+		players[i].xp = 0;
+		players[i].level = 1;
+	}
+
 	return true;
 }
 

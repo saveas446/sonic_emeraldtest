@@ -1251,8 +1251,33 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 		back_lastframe = PLAYER1INPUTDOWN(gc_use);
 
 		// End battle
-		if (battle && battletarget && battletarget->health < 1)
+		if (battle && battletarget && battletarget->health < 1) {
 			battle = false;
+			UINT8 xp_min, xp_max;
+
+			switch (battletarget->type) {
+				case MT_BLUECRAWLA:
+				default:
+				xp_min = 20;
+				xp_max = 35;
+			}
+
+			players[displayplayer].xp += P_RandomRange(xp_min, xp_max);
+
+			UINT16 xpcap = 100;
+
+			// Multiply by 1.25 for every level
+			for (int i = 1; i < players[displayplayer].level; i++)
+				xpcap += xpcap >> 2; 
+
+			// Increase level
+			if (players[displayplayer].xp > 100) {
+
+				// Keep the change!
+				players[displayplayer].xp = players[displayplayer].xp - xpcap;
+				players[displayplayer].level++;
+			}
+		}
 	}
 
 	if (!((battle && !canmove) || moveanim_step)) {

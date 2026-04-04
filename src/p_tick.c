@@ -613,7 +613,7 @@ void P_Ticker(boolean run)
 			case MOVEANIM_STROLL:
 			// Yes I'm recalculating the angle every frame. Cry about it
 			moveanim_source->angle = R_PointToAngle2(moveanim_source->x, moveanim_source->y, moveanim_target->x, moveanim_target->y);
-			P_Thrust(moveanim_source, moveanim_source->angle, mobjinfo[moveanim_source->type].mass*1441);
+			P_InstaThrust(moveanim_source, moveanim_source->angle, 16*FRACUNIT);
 			break;
 			default:
 			break;
@@ -624,7 +624,7 @@ void P_Ticker(boolean run)
 			case MOVEANIM_STROLL:
 			// Go back to where you came!
 			moveanim_source->angle = R_PointToAngle2(moveanim_source->x, moveanim_source->y, moveanim_source->originalpos[0], moveanim_source->originalpos[1]);
-			P_Thrust(moveanim_source, moveanim_source->angle, mobjinfo[moveanim_source->type].mass*1441);
+			P_InstaThrust(moveanim_source, moveanim_source->angle, 16*FRACUNIT);
 
 			if (R_PointToDist2(moveanim_source->x, moveanim_source->y, moveanim_source->originalpos[0], moveanim_source->originalpos[1]) < 24*FRACUNIT) {
 				// End move animation

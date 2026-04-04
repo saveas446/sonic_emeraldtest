@@ -2581,7 +2581,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_PLAY_DIE,     // deathstate
 		S_NULL,         // xdeathstate
 		sfx_None,       // deathsound
-		1,              // speed
+		3,              // speed
 		16*FRACUNIT,    // radius
 		48*FRACUNIT,    // height
 		0,              // display offset
@@ -2595,7 +2595,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	{           // MT_BLUECRAWLA
 		100,            // doomednum
 		S_POSS_STND,    // spawnstate
-		50,             // spawnhealth
+		60,             // spawnhealth
 		S_POSS_BATL,    // seestate
 		sfx_None,       // seesound
 		32,             // reactiontime

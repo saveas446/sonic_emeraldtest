@@ -9032,7 +9032,7 @@ void P_PlayerThink(player_t *player)
 	} else {
 		if (battle && !moveanim_step) {
 			// Max 3 rotations of the gauge
-			player->battlegauge = min(player->battlegauge + 2, 360*3);
+			player->battlegauge = min(player->battlegauge + 3, 360*3);
 		}
 	}
 

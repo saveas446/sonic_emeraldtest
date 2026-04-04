@@ -432,6 +432,9 @@ typedef struct player_s
 
 	UINT16 battlegauge;
 
+	UINT16 xp;
+	UINT8 level;
+
 	tic_t jointime; // Timer when player joins game to change skin/color
 #ifdef HWRENDER
 	fixed_t fovadd; // adjust FOV for hw rendering

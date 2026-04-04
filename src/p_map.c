@@ -531,12 +531,6 @@ static boolean PIT_CheckThing(mobj_t *thing)
 		return true;
 	}
 
-	if (thing->type == MT_HOOPCOLLIDE && thing->flags & MF_SPECIAL && tmthing->player)
-	{
-		P_TouchSpecialThing(thing, tmthing, true);
-		return true;
-	}
-
 	// check for skulls slamming into things
 	if (tmthing->flags2 & MF2_SKULLFLY)
 	{
@@ -789,43 +783,18 @@ static boolean PIT_CheckThing(mobj_t *thing)
 		droneobj->extravalue2 = (INT32)leveltime + TICRATE;
 	}
 
-	// If we're touching the battletarget during the stroll animation, move on to the next step
-	if (moveanim_step == 1 && thing == moveanim_target && moveanim == MOVEANIM_STROLL && tmthing == moveanim_source)
-	{
-		int dmg_min, dmg_max;
-
-		// Damage enemy, if we're a player deplete the battle gauge
-		if (tmthing->player)
-			tmthing->player->battlegauge = max(0, tmthing->player->battlegauge - 360); // Don't go below 0
-
-		// Set damage amount based on mobj type
-		switch (moveanim_source->type) {
-			case MT_PLAYER:
-			dmg_min = 15;
-			dmg_max = 25;
-			case MT_BLUECRAWLA:
-			default:
-			dmg_min = 6;
-			dmg_max = 12;
-		}
-
-		P_DamageMobj(moveanim_target, NULL, tmthing, P_RandomRange(dmg_min, dmg_max));
-
-		moveanim_step = 2;
-	}
-
-	/*// check for special pickup
-	if (thing->flags & MF_SPECIAL && tmthing->player)
+	// check for special pickup
+	if (true)
 	{
 		P_TouchSpecialThing(thing, tmthing, true); // can remove thing
 		return true;
 	}
 	// check again for special pickup
-	if (tmthing->flags & MF_SPECIAL && thing->player)
+	if (true)
 	{
 		P_TouchSpecialThing(tmthing, thing, true); // can remove thing
 		return true;
-	}*/
+	}
 
 	// Sprite Spikes!
 	// Do not return because solidity code comes below.
