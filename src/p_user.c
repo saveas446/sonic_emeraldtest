@@ -886,55 +886,14 @@ void P_ResetPlayer(player_t *player)
 		CV_SetValue(&cv_analog2, true);
 }
 
-//
-// P_GivePlayerRings
-//
-// Gives rings to the player, and does any special things required.
-// Call this function when you want to increment the player's health.
-//
+// TODO: Remove this, maybe?
+// Not much stuff is required when giving the player rings anymore as they're now currency.
 void P_GivePlayerRings(player_t *player, INT32 num_rings)
 {
 	if (player->bot)
 		player = &players[consoleplayer];
 
-	if (!player->mo)
-		return;
-
-	player->mo->health += num_rings;
-	player->health += num_rings;
-
-	if (!G_IsSpecialStage(gamemap) || !useNightsSS)
-		player->totalring += num_rings;
-
-	// Can only get up to 9999 rings, sorry!
-	if (player->mo->health > 10000)
-	{
-		player->mo->health = 10000;
-		player->health = 10000;
-	}
-	else if (player->mo->health < 1)
-	{
-		player->mo->health = 1;
-		player->health = 1;
-	}
-
-	// Now extra life bonuses are handled here instead of in P_MovePlayer, since why not?
-	if (!ultimatemode && !modeattacking && !G_IsSpecialStage(gamemap) && G_GametypeUsesLives())
-	{
-		INT32 gainlives = 0;
-
-		while (player->xtralife < maxXtraLife && player->health > 100 * (player->xtralife+1))
-		{
-			++gainlives;
-			++player->xtralife;
-		}
-
-		if (gainlives)
-		{
-			P_GivePlayerLives(player, gainlives);
-			P_PlayLivesJingle(player);
-		}
-	}
+	player->rings += num_rings;
 }
 
 //

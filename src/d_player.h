@@ -435,6 +435,9 @@ typedef struct player_s
 	UINT16 xp;
 	UINT8 level;
 
+	UINT32 rings; // Yes, separate from health here. Rings track currency, not health.
+
+
 	tic_t jointime; // Timer when player joins game to change skin/color
 #ifdef HWRENDER
 	fixed_t fovadd; // adjust FOV for hw rendering

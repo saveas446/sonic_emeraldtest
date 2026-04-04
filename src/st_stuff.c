@@ -665,20 +665,9 @@ static void ST_drawTime(void)
 
 static inline void ST_drawRings(void)
 {
-	INT32 ringnum = max(stplyr->health-1, 0);
+	INT32 ringnum = max(stplyr->rings, 0);
 
-	ST_DrawPatchFromHudWS(HUD_RINGS, ((stplyr->health <= 1 && leveltime/5 & 1) ? rrings : sborings));
-
-	if (objectplacing)
-		ringnum = op_currentdoomednum;
-	else if (!useNightsSS && G_IsSpecialStage(gamemap))
-	{
-		INT32 i;
-		ringnum = 0;
-		for (i = 0; i < MAXPLAYERS; i++)
-			if (playeringame[i] && players[i].mo && players[i].mo->health > 1)
-				ringnum += players[i].mo->health - 1;
-	}
+	ST_DrawPatchFromHudWS(HUD_RINGS, ((stplyr->rings <= 1 && leveltime/5 & 1) ? rrings : sborings));
 
 	ST_DrawNumFromHudWS(HUD_RINGSNUM, ringnum);
 }
@@ -1774,6 +1763,8 @@ static void ST_overlayDrawer(void)
 			)
 			ST_drawLives();
 
+			ST_drawRings();
+
 			UINT16 xpcap = 100;
 
 			// Multiply by 1.25 for every level
@@ -1787,7 +1778,7 @@ static void ST_overlayDrawer(void)
 	} else {
 		if (!moveanim_step) {
 			V_DrawRightAlignedString(BASEVIDWIDTH, 152, 0, va("BATTLE GAUGE: %d", stplyr->battlegauge));
-			V_DrawRightAlignedString(BASEVIDWIDTH, 160, 0, va("DIST: %d", R_PointToDist2(stplyr->mo->x, stplyr->mo->y, battletarget->x, battletarget->y) >> FRACBITS));
+			V_DrawRightAlignedString(BASEVIDWIDTH, 160, 0, va("DISTANCE: %d", R_PointToDist2(stplyr->mo->x, stplyr->mo->y, battletarget->x, battletarget->y) >> FRACBITS));
 			V_DrawRightAlignedString(BASEVIDWIDTH, 172, 0, va("HEALTH: %d", stplyr->mo->health));
 			V_DrawRightAlignedString(BASEVIDWIDTH, 180, 0, va("ENEMYH: %d", battletarget->health));
 

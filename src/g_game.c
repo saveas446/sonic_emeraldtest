@@ -1253,6 +1253,8 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 		// End battle
 		if (battle && battletarget && battletarget->health < 1) {
 			battle = false;
+
+			// GIVE XP
 			UINT8 xp_min, xp_max;
 
 			switch (battletarget->type) {
@@ -1277,6 +1279,14 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 				players[displayplayer].xp = players[displayplayer].xp - xpcap;
 				players[displayplayer].level++;
 			}
+
+			// GIVE RINGS
+
+			// Give the player 1 eighth of the battletarget's spawn health in rings
+			players[displayplayer].rings += battletarget->info->spawnhealth >> 3;
+			
+			// Battletarget is not in use anymore
+			battletarget = NULL;
 		}
 	}
 

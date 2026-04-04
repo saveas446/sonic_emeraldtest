@@ -3188,6 +3188,7 @@ boolean P_SetupLevel(boolean skipprecip)
 	for (i = 0; i < MAXPLAYERS; i++) {
 		players[i].xp = 0;
 		players[i].level = 1;
+		players[i].rings = 0; // BROKE INDIVIDUAL ALERT
 	}
 
 	return true;

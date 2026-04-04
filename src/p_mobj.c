@@ -672,7 +672,6 @@ void P_EnterBattle(mobj_t* player, mobj_t* enemy)
 {
 	// Pretty empty for now
 	battle = true;
-	CONS_Printf("Battle triggered!"); // Debug
 	player->player->battlegauge = 0; // Reset battle gauge
 	battletarget = enemy;
 	canmove = false; // Menu select by default

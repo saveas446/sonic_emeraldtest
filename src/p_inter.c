@@ -299,6 +299,21 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			break;
 		}
 
+		// 20% chance for critical hit!!
+		int crit_chance = 20;
+
+		// If your gauge is at least 1 and a half times filled, increase critical hit chance
+		if (moveanim_source->player && moveanim_source->player->battlegauge > 360 * 1.5)
+			crit_chance = 40;
+
+
+		// Apply critical hit		
+		if (P_RandomRange(1, 100) <= crit_chance) {
+			dmg_min *= 1.5;
+			dmg_max *= 1.5;
+			CONS_Printf("Critical hit!!\n");
+		}
+
 		P_DamageMobj(moveanim_target, NULL, tmthing, P_RandomRange(dmg_min, dmg_max));
 
 		moveanim_step = 2;
