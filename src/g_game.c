@@ -1157,7 +1157,6 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 		side += ((axis * sidemove[1]) >> 10);
 	}
 
-	if (!((battle && !canmove) || moveanim_step || indialogue)) {
 		// forward with key or button
 		axis = JoyAxis(AXISMOVE);
 		altaxis = JoyAxis(AXISLOOK);
@@ -1184,7 +1183,6 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 			cmd->buttons |= BT_WEAPONNEXT; // Next Weapon
 		if (PLAYER1INPUTDOWN(gc_weaponprev))
 			cmd->buttons |= BT_WEAPONPREV; // Previous Weapon
-	}
 
 #if NUM_WEAPONS > 10
 "Add extra inputs to g_input.h/gamecontrols_e"
@@ -1200,7 +1198,7 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 
 
 	if (gamestate == GS_LEVEL) {
-		if (!moveanim_step) {
+		if (!moveanim_step && !indialogue) {
 			// fire with any button/key
 			axis = JoyAxis(AXISFIRE);
 			if ((PLAYER1INPUTDOWN(gc_fire) && !fire_lastframe) && battle) {
@@ -1301,7 +1299,6 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 		}
 	}
 
-	if (!((battle && !canmove) || moveanim_step)) {
 		// Disable movement if you're selecting battle UI
 		// fire normal with any button/key
 		axis = JoyAxis(AXISFIRENORMAL);
@@ -1346,8 +1343,6 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 		axis = JoyAxis(AXISJUMP);
 		if (PLAYER1INPUTDOWN(gc_jump) || (cv_usejoystick.value && axis > 0))
 			cmd->buttons |= BT_JUMP;
-
-	}
 
 			// player aiming shit, ahhhh...
 			{

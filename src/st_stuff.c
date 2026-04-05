@@ -13,6 +13,7 @@
 ///        Does the face/direction indicator animatin.
 ///        Does palette indicators as well (red pain/berserk, bright pickup)
 
+#include "console.h"
 #include "doomdef.h"
 #include "g_battle.h"
 #include "g_game.h"
@@ -167,15 +168,17 @@ hudinfo_t hudinfo[NUMHUDITEMS] =
 };
 
 dialogue_t testdialogue = {
-	"Sonic, I remember you're\n genocides..."
+	"Okay Sonic, let's start killing,\nsome \x85monsters\x80."
 };
 
 UINT8 indialogue;
 dialogue_t* currentdialogue;
+UINT16 numchars;
 
 void ST_StartDialogue(dialogue_t* dialogue) {
 	indialogue = true;
 	currentdialogue = dialogue;
+	numchars = 1;
 }
 
 
@@ -1802,6 +1805,86 @@ static void ST_overlayDrawer(void)
 
 	if (indialogue) {
 		V_DrawFill(0, 148, 320, 80, 31);
+
+		int drawx, drawy;
+		drawx = 0;
+		drawy = 152;
+		UINT8* colormap;
+
+		unsigned char c;
+
+		// White text by default
+		colormap = NULL;
+
+		for (int i = 0; i < numchars; i++) {
+			c = currentdialogue->text[i];
+
+			// Handle special characters
+			switch (c) {
+				// Line break
+				case '\n':
+				drawx = 0;
+				drawy += 8;
+				continue;
+				// White text
+				case 0x80:
+				colormap = NULL;
+				continue;
+				// Purple text
+				case 0x81:
+				colormap = purplemap;
+				continue;
+				// Yellow text
+				case 0x82:
+				colormap = yellowmap;
+				continue;
+				// Green text
+				case 0x83:
+				colormap = lgreenmap;
+				continue;
+				// Blue text
+				case 0x84:
+				colormap = bluemap;
+				continue;
+				// Red text
+				case 0x85:
+				colormap = redmap;
+				continue;
+				// Gray text
+				case 0x86:
+				colormap = graymap;
+				continue;
+				// Orange text
+				case 0x87:
+				colormap = orangemap;
+				continue;
+				// Continue as normal
+				default:
+				break;
+			}
+
+			c -= HU_FONTSTART;
+
+			if (c < 0 || c >= HU_FONTSIZE || !hu_font[c])
+			{
+				drawx += 8;
+				continue;
+			}
+
+			V_DrawFixedPatch(drawx << FRACBITS, drawy << FRACBITS, FRACUNIT, 0, hu_font[c], colormap);
+			drawx += hu_font[c]->width; // Move draw coordinate along
+		}
+
+		// Add to number of chars to be rendered
+		if (numchars < strlen(currentdialogue->text)) {
+			if (stplyr->cmd.buttons & BT_USE || stplyr->cmd.buttons & BT_JUMP) 
+				numchars += 2;
+			else
+				numchars++;
+		} else {
+			if (stplyr->cmd.buttons & BT_USE || stplyr->cmd.buttons & BT_JUMP) 
+				indialogue = false;
+		}
 	}
 
 #ifdef HAVE_BLUA

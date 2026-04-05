@@ -2480,7 +2480,7 @@ state_t states[NUMSTATES] =
 
 	{SPR_ITEM, 0, 0, {NULL}, 0, 0, S_ITEM}, // S_ITEM
 
-	{SPR_GARG, 0, 1, {A_TailsNPC}, 0, 0, S_TAILSNPC}, // S_TAILSNPC
+	{SPR_TAIL, 0, 1, {A_TailsNPC}, 0, 0, S_TAILSNPC}, // S_TAILSNPC
 
 #ifdef SEENAMES
 	{SPR_NULL, 0, 1, {NULL}, 0, 0, S_NULL}, // S_NAMECHECK

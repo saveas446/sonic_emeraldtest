@@ -10183,16 +10183,26 @@ void A_CrawlaBattle(mobj_t *actor)
 	}
 }
 
+bool cooldown;
+
 void A_TailsNPC(mobj_t* actor)
 {
+	bool playerfound;
 #ifdef HAVE_BLUA
 	if (LUA_CallAction("A_TailsNPC", actor))
 		return;
 #endif
 	
+	playerfound = P_LookForPlayers(actor, true, false, 160*FRACUNIT);
 	// No player found? Oh well...
-	if (!P_LookForPlayers(actor, true, false, 160*FRACUNIT))
+	if (!playerfound || indialogue || cooldown) {
+		// If we leave the radius of dialog, deactivate the cooldown
+		if (!playerfound)
+			cooldown = false;
+
 		return;
+	}
+	cooldown = true;
 
 	ST_StartDialogue(&testdialogue);
 }

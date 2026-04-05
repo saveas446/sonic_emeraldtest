@@ -36,6 +36,7 @@
 #include "z_zone.h"
 #include "w_wad.h"
 #include "hu_stuff.h"
+#include "st_dialogue.h"
 // We need to affect the NiGHTS hud
 #include "st_stuff.h"
 #include "lua_script.h"
@@ -8983,7 +8984,22 @@ void P_PlayerThink(player_t *player)
 		P_ResetScore(player);
 	}
 	else {
+		ticcmd_t backupcmd;
+		if ((battle && !canmove) || moveanim_step || indialogue) {
+			// Save the values of player->cmd beforehand
+			backupcmd = player->cmd;
+			// Zero out any input
+			player->cmd.forwardmove = 0;
+			player->cmd.sidemove = 0;
+			player->cmd.buttons = 0;
+		}
+
 		P_MovePlayer(player);
+
+		if ((battle && !canmove) || moveanim_step || indialogue) {
+			// Restore player->cmd, we might need it later
+			player->cmd = backupcmd;
+		}
 	}
 
 	if (!player->mo) {
