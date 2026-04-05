@@ -222,6 +222,21 @@ void P_DoNightsScore(player_t *player)
 	dummymo->destscale = 2*FRACUNIT;
 }
 
+void P_CollectItem(itemtype_t item, UINT8 amount) {
+	// If item exists in inventory, add to its quantity
+	for (int i = 0; i < numitems; i++) {
+		if (inventory[i].item == item) {
+			inventory[i].quantity += amount;
+			return;
+		}
+	}
+
+	// Add item to the end of the inventory
+	inventory[numitems].item = item;
+	inventory[numitems].quantity = amount;
+	numitems++;
+}
+
 /** Takes action based on a ::MF_SPECIAL thing touched by a player.
   * Actually, this just checks a few things (heights, toucher->player, no
   * objectplace, no dead or disappearing things)
@@ -356,6 +371,12 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 
 				if ((maptol & TOL_NIGHTS) && special->type != MT_FLINGRING)
 					P_DoNightsScore(player);
+				break;
+			case MT_ITEM:
+				P_CollectItem(ITEM_CHILIDOG, 1);
+				break;
+			case MT_PIKACHUHEAD:
+				P_CollectItem(ITEM_PIKACHUHEAD, 1);
 				break;
 			/*default: // SOC or script pickup
 				if (player->bot)

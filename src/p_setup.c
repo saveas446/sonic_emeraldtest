@@ -33,6 +33,7 @@
 #include "r_draw.h"
 
 #include "s_sound.h"
+#include "st_dialogue.h"
 #include "st_stuff.h"
 #include "w_wad.h"
 #include "z_zone.h"
@@ -995,6 +996,9 @@ static void P_LoadThings(void)
 				mtsector->f_slope ? P_GetZAt(mtsector->f_slope, mt->x << FRACBITS, mt->y << FRACBITS) :
 #endif
 				mtsector->floorheight)>>FRACBITS;
+
+		if (mt->type == 1602)
+			CONS_Printf("Tails NPC\n");
 
 		if (mt->type == 1700 // MT_AXIS
 			|| mt->type == 1701 // MT_AXISTRANSFER
@@ -2692,6 +2696,11 @@ boolean P_SetupLevel(boolean skipprecip)
 	battle = false;
 	canmove = true;
 	moveanim_step = 0;
+	numitems = 0;
+
+	indialogue = false;
+	currentdialogue = NULL;
+
 
 	// This is needed. Don't touch.
 	maptol = mapheaderinfo[gamemap-1]->typeoflevel;

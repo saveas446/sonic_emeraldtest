@@ -10,6 +10,18 @@ typedef enum {
     NUMMOVEANIMS
 } moveanim_t;
 
+typedef enum {
+    ITEM_NONE = 0,
+    ITEM_CHILIDOG,
+    ITEM_PIKACHUHEAD,
+    NUMITEMTYPES
+} itemtype_t;
+
+typedef struct {
+    itemtype_t item;
+    UINT8 quantity;
+} item_t;
+
 extern boolean battle;
 extern boolean canmove;
 extern menu_t* currentbattlemenu;
@@ -21,4 +33,8 @@ extern moveanim_t moveanim; // WHICH move animation is playing?
 extern mobj_t* moveanim_source;
 extern mobj_t* moveanim_target;
 
+extern item_t inventory[50];
+extern UINT8 numitems;
+
+extern char* itemnames[NUMITEMTYPES];
 #endif

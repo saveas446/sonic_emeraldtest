@@ -209,6 +209,7 @@ void A_BrakLobShot();
 void A_NapalmScatter();
 void A_SpawnFreshCopy();
 void A_CrawlaBattle();
+void A_TailsNPC();
 
 // ratio of states to sprites to mobj types is roughly 6 : 1 : 1
 #define NUMMOBJFREESLOTS 512
@@ -570,6 +571,10 @@ typedef enum sprite
 	SPR_SRBM,
 	SPR_SRBN,
 	SPR_SRBO,
+
+	SPR_ITEM,
+
+	SPR_TAIL,
 
 	SPR_FIRSTFREESLOT,
 	SPR_LASTFREESLOT = SPR_FIRSTFREESLOT + NUMSPRITEFREESLOTS - 1,
@@ -2921,6 +2926,10 @@ typedef enum state
 	S_SRB1_GENREX1,
 	S_SRB1_GENREX2,
 
+	S_ITEM,
+
+	S_TAILSNPC,
+
 #ifdef SEENAMES
 	S_NAMECHECK,
 #endif
@@ -3447,6 +3456,12 @@ typedef enum mobj_type
 	MT_SRB1_METALSONIC,
 	MT_SRB1_GOLDBOT,
 	MT_SRB1_GENREX,
+
+	MT_ITEM,
+	MT_PIKACHUHEAD,
+
+	MT_TAILSNPC,
+
 #ifdef SEENAMES
 	MT_NAMECHECK,
 #endif

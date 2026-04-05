@@ -53,7 +53,7 @@ char sprnames[NUMSPRITES + 1][5] =
 	"BOM3","BOM4","ROIA","ROIB","ROIC","ROID","ROIE","ROIF","ROIG","ROIH",
 	"ROII","ROIJ","ROIK","ROIL","ROIM","ROIN","ROIO","ROIP","BBAL","GWLG",
 	"GWLR","SRBA","SRBB","SRBC","SRBD","SRBE","SRBF","SRBG","SRBH","SRBI",
-	"SRBJ","SRBK","SRBL","SRBM","SRBN","SRBO",
+	"SRBJ","SRBK","SRBL","SRBM","SRBN","SRBO","ITEM","TAIL"
 };
 
 // Doesn't work with g++, needs actionf_p1 (don't modify this comment)
@@ -2477,6 +2477,11 @@ state_t states[NUMSTATES] =
 
 	{SPR_SRBO, 0, 2, {A_Look}, 0, 0, S_SRB1_GENREX1}, // S_SRB1_GENREX1
 	{SPR_SRBO, 0, 2, {A_BuzzFly}, 0, 0, S_SRB1_GENREX2}, // S_SRB1_GENREX2
+
+	{SPR_ITEM, 0, 0, {NULL}, 0, 0, S_ITEM}, // S_ITEM
+
+	{SPR_GARG, 0, 1, {A_TailsNPC}, 0, 0, S_TAILSNPC}, // S_TAILSNPC
+
 #ifdef SEENAMES
 	{SPR_NULL, 0, 1, {NULL}, 0, 0, S_NULL}, // S_NAMECHECK
 #endif
@@ -13728,6 +13733,87 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		0,              // damage
 		sfx_None,       // activesound
 		MF_SPECIAL|MF_SHOOTABLE|MF_ENEMY|MF_NOGRAVITY|MF_SLIDEME,  // flags
+		S_NULL          // raisestate
+	},
+
+	{           // MT_ITEM
+		1600,            // doomednum
+		S_ITEM,         // spawnstate
+		1000,           // spawnhealth
+		S_NULL,         // seestate
+		sfx_None,       // seesound
+		2,   			// reactiontime
+		sfx_None,       // attacksound
+		S_NULL,         // painstate
+		0,              // painchance
+		sfx_None,       // painsound
+		S_NULL,         // meleestate
+		S_NULL,         // missilestate
+		S_NULL,         // deathstate
+		S_NULL,         // xdeathstate
+		sfx_None,       // deathsound
+		38*FRACUNIT,    // speed
+		16*FRACUNIT,    // radius
+		24*FRACUNIT,    // height
+		0,              // display offset
+		100,            // mass
+		0,              // damage
+		sfx_None,       // activesound
+		MF_SLIDEME|MF_SPECIAL|MF_NOGRAVITY|MF_NOCLIPHEIGHT, // flags
+		S_NULL          // raisestate
+	},
+	
+	{           // MT_PIKACHUHEAD
+		1601,            // doomednum
+		S_ITEM,         // spawnstate
+		1000,           // spawnhealth
+		S_NULL,         // seestate
+		sfx_None,       // seesound
+		2,   			// reactiontime
+		sfx_None,       // attacksound
+		S_NULL,         // painstate
+		0,              // painchance
+		sfx_None,       // painsound
+		S_NULL,         // meleestate
+		S_NULL,         // missilestate
+		S_NULL,         // deathstate
+		S_NULL,         // xdeathstate
+		sfx_None,       // deathsound
+		38*FRACUNIT,    // speed
+		16*FRACUNIT,    // radius
+		24*FRACUNIT,    // height
+		0,              // display offset
+		100,            // mass
+		0,              // damage
+		sfx_None,       // activesound
+		MF_SLIDEME|MF_SPECIAL|MF_NOGRAVITY|MF_NOCLIPHEIGHT, // flags
+		S_NULL          // raisestate
+	},
+
+	{           // MT_TAILSNPC
+		1602,           // doomednum
+		S_TAILSNPC,     // spawnstate
+		1000,           // spawnhealth
+		S_NULL,         // seestate
+		sfx_None,       // seesound
+		8,              // reactiontime
+		sfx_None,       // attacksound
+		S_NULL,         // painstate
+		0,              // painchance
+		sfx_None,       // painsound
+		S_NULL,         // meleestate
+		S_NULL,         // missilestate
+		S_NULL,         // deathstate
+		S_NULL,         // xdeathstate
+		sfx_None,       // deathsound
+		21*FRACUNIT,    // speed
+		16*FRACUNIT,    // radius
+		40*FRACUNIT,    // height
+		0,              // display offset
+		100,            // mass
+		1,              // damage
+		sfx_statu2,     // activesound
+		MF_SLIDEME|MF_SOLID|MF_PUSHABLE, // flags
 		S_NULL          // raisestate
 	},
 

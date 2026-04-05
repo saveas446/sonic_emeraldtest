@@ -19,6 +19,7 @@
 #include "r_local.h"
 #include "p_local.h"
 #include "f_finale.h"
+#include "st_dialogue.h"
 #include "st_stuff.h"
 #include "i_video.h"
 #include "v_video.h"
@@ -164,6 +165,19 @@ hudinfo_t hudinfo[NUMHUDITEMS] =
 	{ 152,  24}, // HUD_GRAVBOOTSICO
 	{ 240, 160}, // HUD_LAP
 };
+
+dialogue_t testdialogue = {
+	"Sonic, I remember you're\n genocides..."
+};
+
+UINT8 indialogue;
+dialogue_t* currentdialogue;
+
+void ST_StartDialogue(dialogue_t* dialogue) {
+	indialogue = true;
+	currentdialogue = dialogue;
+}
+
 
 //
 // STATUS BAR CODE
@@ -1784,6 +1798,10 @@ static void ST_overlayDrawer(void)
 
 			ST_drawBattleMenu();
 		}
+	}
+
+	if (indialogue) {
+		V_DrawFill(0, 148, 320, 80, 31);
 	}
 
 #ifdef HAVE_BLUA

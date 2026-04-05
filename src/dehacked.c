@@ -1878,6 +1878,8 @@ static actionpointer_t actionpointers[] =
 	{{A_BrakLobShot},          "A_BRAKLOBSHOT"},
 	{{A_NapalmScatter},        "A_NAPALMSCATTER"},
 	{{A_SpawnFreshCopy},       "A_SPAWNFRESHCOPY"},
+	{{A_CrawlaBattle},         "A_CRAWLABATTLE"},
+	{{A_TailsNPC},             "A_TAILSNPC"},
 
 	{{NULL},                   "NONE"},
 
@@ -6158,6 +6160,10 @@ static const char *const STATE_LIST[] = { // array length left dynamic for sanit
 	"S_SRB1_GENREX1",
 	"S_SRB1_GENREX2",
 
+	"S_ITEM",
+
+	"S_TAILSNPC",
+
 #ifdef SEENAMES
 	"S_NAMECHECK",
 #endif
@@ -6667,6 +6673,12 @@ static const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for s
 	"MT_SRB1_METALSONIC",
 	"MT_SRB1_GOLDBOT",
 	"MT_SRB1_GENREX",
+
+	"MT_ITEM",
+	"MT_PIKACHUHEAD",
+
+	"MT_TAILSNPC",
+
 #ifdef SEENAMES
 	"MT_NAMECHECK",
 #endif

@@ -175,6 +175,7 @@ static void M_RoomMenu(INT32 choice);
 menu_t MessageDef;
 
 menu_t SPauseDef;
+menu_t SInventoryDef;
 
 #define lsheadingheight 16
 
@@ -193,6 +194,7 @@ menu_t SR_MainDef, SR_UnlockChecklistDef;
 
 // Misc. Main Menu
 static void M_SinglePlayerMenu(INT32 choice);
+static void M_Inventory(INT32 choice);
 static void M_Options(INT32 choice);
 static void M_SelectableClearMenus(INT32 choice);
 static void M_Retry(INT32 choice);
@@ -491,34 +493,58 @@ typedef enum
 	mpause_quit
 } mpause_e;
 
+static void M_HandleInventoryMenu(INT32 choice) {
+	switch (choice)
+	{
+		case KEY_ESCAPE:
+		//case KEY_ENTER:
+			M_ClearMenus(true);
+			break;
+	}
+}
+
+static void M_DrawInventoryMenu(INT32 choice) {
+	for (int i = 0; i < numitems; i++) {
+		if (inventory[i].quantity != 1)
+			V_DrawCenteredString(67, (i * 20) + 40, V_ALLOWLOWERCASE, va("%s x%d", itemnames[inventory[i].item], inventory[i].quantity));
+		else
+			V_DrawCenteredString(67, (i * 20) + 40, V_ALLOWLOWERCASE, va("%s", itemnames[inventory[i].item]));
+	}
+}
+
+
+static void M_Inventory(INT32 choice) {
+	M_SetupNextMenu(&SInventoryDef);
+}
+
+// ---------------------
+// Inventory
+// ---------------------
+static menuitem_t SInventoryMenu[] =
+{
+	{IT_KEYHANDLER | IT_NOTHING, NULL, "", M_HandleInventoryMenu, '\0'},     // dummy menuitem for the control func
+};
+
 // ---------------------
 // Pause Menu SP Edition
 // ---------------------
 static menuitem_t SPauseMenu[] =
 {
-	// Pandora's Box will be shifted up if both options are available
-	{IT_CALL | IT_STRING,    NULL, "Pandora's Box...",     M_PandorasBox,         16},
-	{IT_CALL | IT_STRING,    NULL, "Emblem Hints...",      M_EmblemHints,         24},
-	{IT_CALL | IT_STRING,    NULL, "Level Select...",      M_LoadGameLevelSelect, 32},
-
-	{IT_CALL | IT_STRING,    NULL, "Continue",             M_SelectableClearMenus,48},
-	{IT_CALL | IT_STRING,    NULL, "Retry",                M_Retry,               56},
-	{IT_CALL | IT_STRING,    NULL, "Options",              M_Options,             64},
-
-	{IT_CALL | IT_STRING,    NULL, "Return to Title",      M_EndGame,             80},
-	{IT_CALL | IT_STRING,    NULL, "Quit Game",            M_QuitSRB2,            88},
+	{IT_CALL | IT_STRING,    NULL, "Party",        NULL, 0},
+	{IT_CALL | IT_STRING,    NULL, "Chaos Power",  NULL, 24},
+	{IT_CALL | IT_STRING,    NULL, "Items",        M_Inventory, 48},
+	{IT_CALL | IT_STRING,    NULL, "Save",         NULL, 72},
+	{IT_CALL | IT_STRING,    NULL, "Options",      M_Options, 96},
+	{IT_CALL | IT_STRING,    NULL, "Exit",         M_SelectableClearMenus, 120},
 };
 
 typedef enum
 {
-	spause_pandora = 0,
-	spause_hints,
-	spause_levelselect,
-
-	spause_continue,
-	spause_retry,
+	spause_party = 0,
+	spause_chaospower,
+	spause_items,
+	spause_save,
 	spause_options,
-	spause_title,
 	spause_quit
 } spause_e;
 
@@ -1394,9 +1420,20 @@ menu_t MISC_AddonsDef =
 	NULL
 };
 
-menu_t MAPauseDef = PAUSEMENUSTYLE(MAPauseMenu, 40, 72);
-menu_t SPauseDef = PAUSEMENUSTYLE(SPauseMenu, 40, 72);
-menu_t MPauseDef = PAUSEMENUSTYLE(MPauseMenu, 40, 72);
+menu_t MAPauseDef = PAUSEMENUSTYLE(MAPauseMenu, 29, 32);
+menu_t SPauseDef = PAUSEMENUSTYLE(SPauseMenu, 67, 44);
+menu_t SInventoryDef = 
+{ 
+	NULL, 
+	sizeof(SInventoryMenu)/sizeof(menuitem_t), 
+	&SPauseDef, 
+	SInventoryMenu, 
+	M_DrawInventoryMenu, 
+	67, 44, 
+	0, 
+	((void *)0)
+};
+menu_t MPauseDef = PAUSEMENUSTYLE(MPauseMenu, 29, 56);
 
 // Misc Main Menu
 menu_t MISC_ScrambleTeamDef = DEFAULTMENUSTYLE(NULL, MISC_ScrambleTeamMenu, &MPauseDef, 27, 40);
@@ -2485,7 +2522,8 @@ void M_Drawer(void)
 	if (menuactive)
 	{
 		// now that's more readable with a faded background (yeah like Quake...)
-		if (!WipeInAction)
+		// Do not go to pause layer 6, or else you will meet with a dastardly creature known as Old Man Pausenquences...
+		if (!WipeInAction && currentMenu != &SPauseDef)
 			V_DrawFadeScreen();
 
 		if (currentMenu->drawroutine)
@@ -2559,7 +2597,7 @@ void M_StartControlPanel(void)
 	}
 	else if (!(netgame || multiplayer)) // Single Player
 	{
-		if (gamestate != GS_LEVEL || ultimatemode) // intermission, so gray out stuff.
+		/*if (gamestate != GS_LEVEL || ultimatemode) // intermission, so gray out stuff.
 		{
 			SPauseMenu[spause_pandora].status = (M_SecretUnlocked(SECRET_PANDORA)) ? (IT_GRAYEDOUT) : (IT_DISABLED);
 			SPauseMenu[spause_retry].status = IT_GRAYEDOUT;
@@ -2589,7 +2627,7 @@ void M_StartControlPanel(void)
 		SPauseMenu[spause_levelselect].status = (gamecomplete) ? (IT_STRING | IT_CALL) : (IT_DISABLED);
 
 		// And emblem hints.
-		SPauseMenu[spause_hints].status = (M_SecretUnlocked(SECRET_EMBLEMHINTS)) ? (IT_STRING | IT_CALL) : (IT_DISABLED);
+		SPauseMenu[spause_hints].status = (M_SecretUnlocked(SECRET_EMBLEMHINTS)) ? (IT_STRING | IT_CALL) : (IT_DISABLED);*/
 
 		// Shift up Pandora's Box if both pandora and levelselect are active
 		/*if (SPauseMenu[spause_pandora].status != (IT_DISABLED)
@@ -2599,7 +2637,7 @@ void M_StartControlPanel(void)
 			SPauseMenu[spause_pandora].alphaKey = 32;*/
 
 		currentMenu = &SPauseDef;
-		itemOn = spause_continue;
+		itemOn = spause_party;
 	}
 	else // multiplayer
 	{
@@ -3213,146 +3251,136 @@ static void M_DrawGenericMenu(void)
 
 static void M_DrawPauseMenu(void)
 {
-	if (!netgame && !multiplayer && (gamestate == GS_LEVEL || gamestate == GS_INTERMISSION))
+	INT32 x, y, i, cursory = 0;
+
+	// DRAW MENU
+	x = currentMenu->x;
+	y = currentMenu->y;
+
+	// draw title (or big pic)
+	M_DrawMenuTitle();
+
+	for (i = 0; i < currentMenu->numitems; i++)
 	{
-		emblem_t *emblem_detail[3] = {NULL, NULL, NULL};
-		char emblem_text[3][20];
-		INT32 i;
-
-		M_DrawTextBox(27, 16, 32, 6);
-
-		// Draw any and all emblems at the top.
-		M_DrawMapEmblems(gamemap, 272, 28);
-
-		if (mapheaderinfo[gamemap-1]->actnum != 0)
-			V_DrawString(40, 28, V_YELLOWMAP, va("%s %d", mapheaderinfo[gamemap-1]->lvlttl, mapheaderinfo[gamemap-1]->actnum));
-		else
-			V_DrawString(40, 28, V_YELLOWMAP, mapheaderinfo[gamemap-1]->lvlttl);
-
-		// Set up the detail boxes.
+		if (i == itemOn)
+			cursory = y;
+		switch (currentMenu->menuitems[i].status & IT_DISPLAY)
 		{
-			emblem_t *emblem = M_GetLevelEmblems(gamemap);
-			while (emblem)
-			{
-				INT32 emblemslot;
-				char targettext[9], currenttext[9];
-
-				switch (emblem->type)
+			case IT_PATCH:
+				if (currentMenu->menuitems[i].patch && currentMenu->menuitems[i].patch[0])
 				{
-					case ET_SCORE:
-						snprintf(targettext, 9, "%d", emblem->var);
-						snprintf(currenttext, 9, "%u", G_GetBestScore(gamemap));
-
-						targettext[8] = 0;
-						currenttext[8] = 0;
-
-						emblemslot = 0;
-						break;
-					case ET_TIME:
-						emblemslot = emblem->var; // dumb hack
-						snprintf(targettext, 9, "%i:%02i.%02i",
-							G_TicsToMinutes((tic_t)emblemslot, false),
-							G_TicsToSeconds((tic_t)emblemslot),
-							G_TicsToCentiseconds((tic_t)emblemslot));
-
-						emblemslot = (INT32)G_GetBestTime(gamemap); // dumb hack pt ii
-						if ((tic_t)emblemslot == UINT32_MAX)
-							snprintf(currenttext, 9, "-:--.--");
-						else
-							snprintf(currenttext, 9, "%i:%02i.%02i",
-								G_TicsToMinutes((tic_t)emblemslot, false),
-								G_TicsToSeconds((tic_t)emblemslot),
-								G_TicsToCentiseconds((tic_t)emblemslot));
-
-						targettext[8] = 0;
-						currenttext[8] = 0;
-
-						emblemslot = 1;
-						break;
-					case ET_RINGS:
-						snprintf(targettext, 9, "%d", emblem->var);
-						snprintf(currenttext, 9, "%u", G_GetBestRings(gamemap));
-
-						targettext[8] = 0;
-						currenttext[8] = 0;
-
-						emblemslot = 2;
-						break;
-					case ET_NGRADE:
-						snprintf(targettext, 9, "%u", P_GetScoreForGrade(gamemap, 0, emblem->var));
-						snprintf(currenttext, 9, "%u", G_GetBestNightsScore(gamemap, 0));
-
-						targettext[8] = 0;
-						currenttext[8] = 0;
-
-						emblemslot = 1;
-						break;
-					case ET_NTIME:
-						emblemslot = emblem->var; // dumb hack pt iii
-						snprintf(targettext, 9, "%i:%02i.%02i",
-							G_TicsToMinutes((tic_t)emblemslot, false),
-							G_TicsToSeconds((tic_t)emblemslot),
-							G_TicsToCentiseconds((tic_t)emblemslot));
-
-						emblemslot = (INT32)G_GetBestNightsTime(gamemap, 0); // dumb hack pt iv
-						if ((tic_t)emblemslot == UINT32_MAX)
-							snprintf(currenttext, 9, "-:--.--");
-						else
-							snprintf(currenttext, 9, "%i:%02i.%02i",
-								G_TicsToMinutes((tic_t)emblemslot, false),
-								G_TicsToSeconds((tic_t)emblemslot),
-								G_TicsToCentiseconds((tic_t)emblemslot));
-
-						targettext[8] = 0;
-						currenttext[8] = 0;
-
-						emblemslot = 2;
-						break;
-					default:
-						goto bademblem;
+					if (currentMenu->menuitems[i].status & IT_CENTER)
+					{
+						patch_t *p;
+						p = W_CachePatchName(currentMenu->menuitems[i].patch, PU_CACHE);
+						V_DrawScaledPatch((BASEVIDWIDTH - SHORT(p->width))/2, y, 0, p);
+					}
+					else
+					{
+						V_DrawScaledPatch(x, y, 0,
+							W_CachePatchName(currentMenu->menuitems[i].patch, PU_CACHE));
+					}
 				}
-				if (emblem_detail[emblemslot])
-					goto bademblem;
+				/* FALLTHRU */
+			case IT_NOTHING:
+			case IT_DYBIGSPACE:
+				y += LINEHEIGHT;
+				break;
+			case IT_BIGSLIDER:
+				M_DrawThermo(x, y, (consvar_t *)currentMenu->menuitems[i].itemaction);
+				y += LINEHEIGHT;
+				break;
+			case IT_STRING:
+			case IT_WHITESTRING:
+				if (currentMenu->menuitems[i].alphaKey)
+					y = currentMenu->y+currentMenu->menuitems[i].alphaKey;
+				if (i == itemOn)
+					cursory = y;
 
-				emblem_detail[emblemslot] = emblem;
-				snprintf(emblem_text[emblemslot], 20, "%8s /%8s", currenttext, targettext);
-				emblem_text[emblemslot][19] = 0;
+				if ((currentMenu->menuitems[i].status & IT_DISPLAY)==IT_STRING)
+					V_DrawCenteredString(x, y, 0, currentMenu->menuitems[i].text);
+				else
+					V_DrawCenteredString(x, y, V_YELLOWMAP, currentMenu->menuitems[i].text);
 
-				bademblem:
-				emblem = M_GetLevelEmblems(-1);
-			}
-		}
-		for (i = 0; i < 3; ++i)
-		{
-			emblem_t *emblem = emblem_detail[i];
-			if (!emblem)
-				continue;
-
-			if (emblem->collected)
-				V_DrawSmallMappedPatch(40, 44 + (i*8), 0, W_CachePatchName(M_GetEmblemPatch(emblem), PU_CACHE),
-				                       R_GetTranslationColormap(TC_DEFAULT, M_GetEmblemColor(emblem), GTC_CACHE));
-			else
-				V_DrawSmallScaledPatch(40, 44 + (i*8), 0, W_CachePatchName("NEEDIT", PU_CACHE));
-
-			switch (emblem->type)
-			{
-				case ET_SCORE:
-				case ET_NGRADE:
-					V_DrawString(56, 44 + (i*8), V_YELLOWMAP, "SCORE:");
+				// Cvar specific handling
+				switch (currentMenu->menuitems[i].status & IT_TYPE)
+					case IT_CVAR:
+					{
+						consvar_t *cv = (consvar_t *)currentMenu->menuitems[i].itemaction;
+						switch (currentMenu->menuitems[i].status & IT_CVARTYPE)
+						{
+							case IT_CV_SLIDER:
+								M_DrawSlider(x, y, cv);
+							case IT_CV_NOPRINT: // color use this
+							case IT_CV_INVISSLIDER: // monitor toggles use this
+								break;
+							case IT_CV_STRING:
+								M_DrawTextBox(x, y + 4, MAXSTRINGLENGTH, 1);
+								V_DrawString(x + 8, y + 12, V_ALLOWLOWERCASE, cv->string);
+								if (skullAnimCounter < 4 && i == itemOn)
+									V_DrawCharacter(x + 8 + V_StringWidth(cv->string, 0), y + 12,
+										'_' | 0x80, false);
+								y += 16;
+								break;
+							default:
+								V_DrawString(BASEVIDWIDTH - x - V_StringWidth(cv->string, 0), y,
+									((cv->flags & CV_CHEAT) && !CV_IsSetToDefault(cv) ? V_REDMAP : V_YELLOWMAP), cv->string);
+								break;
+						}
+						break;
+					}
+					y += STRINGHEIGHT;
 					break;
-				case ET_TIME:
-				case ET_NTIME:
-					V_DrawString(56, 44 + (i*8), V_YELLOWMAP, "TIME:");
-					break;
-				case ET_RINGS:
-					V_DrawString(56, 44 + (i*8), V_YELLOWMAP, "RINGS:");
-					break;
-			}
-			V_DrawRightAlignedString(284, 44 + (i*8), V_MONOSPACE, emblem_text[i]);
+			case IT_STRING2:
+				V_DrawCenteredString(x, y, 0, currentMenu->menuitems[i].text);
+				/* FALLTHRU */
+			case IT_DYLITLSPACE:
+				y += SMALLLINEHEIGHT;
+				break;
+			case IT_GRAYPATCH:
+				if (currentMenu->menuitems[i].patch && currentMenu->menuitems[i].patch[0])
+					V_DrawMappedPatch(x, y, 0,
+						W_CachePatchName(currentMenu->menuitems[i].patch,PU_CACHE), graymap);
+				y += LINEHEIGHT;
+				break;
+			case IT_TRANSTEXT:
+				if (currentMenu->menuitems[i].alphaKey)
+					y = currentMenu->y+currentMenu->menuitems[i].alphaKey;
+				/* FALLTHRU */
+			case IT_TRANSTEXT2:
+				V_DrawCenteredString(x, y, V_TRANSLUCENT, currentMenu->menuitems[i].text);
+				y += SMALLLINEHEIGHT;
+				break;
+			case IT_QUESTIONMARKS:
+				if (currentMenu->menuitems[i].alphaKey)
+					y = currentMenu->y+currentMenu->menuitems[i].alphaKey;
+
+				V_DrawCenteredString(x, y, V_TRANSLUCENT|V_OLDSPACING, M_CreateSecretMenuOption(currentMenu->menuitems[i].text));
+				y += SMALLLINEHEIGHT;
+				break;
+			case IT_HEADERTEXT: // draws 16 pixels to the left, in yellow text
+				if (currentMenu->menuitems[i].alphaKey)
+					y = currentMenu->y+currentMenu->menuitems[i].alphaKey;
+
+				V_DrawCenteredString(x-16, y, V_YELLOWMAP, currentMenu->menuitems[i].text);
+				y += SMALLLINEHEIGHT;
+				break;
 		}
 	}
 
-	M_DrawGenericMenu();
+	// DRAW THE SKULL CURSOR
+	if (((currentMenu->menuitems[itemOn].status & IT_DISPLAY) == IT_PATCH)
+		|| ((currentMenu->menuitems[itemOn].status & IT_DISPLAY) == IT_NOTHING))
+	{
+		V_DrawScaledPatch(currentMenu->x + SKULLXOFF, cursory - 5, 0,
+			W_CachePatchName("M_CURSOR", PU_CACHE));
+	}
+	else
+	{
+		V_DrawScaledPatch(currentMenu->x - (V_StringWidth(currentMenu->menuitems[itemOn].text, 0) >> 1) - 24, cursory, 0,
+			W_CachePatchName("M_CURSOR", PU_CACHE));
+		V_DrawCenteredString(currentMenu->x, cursory, V_YELLOWMAP, currentMenu->menuitems[itemOn].text);
+	}
 }
 
 static void M_DrawCenteredMenu(void)

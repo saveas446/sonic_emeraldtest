@@ -24,6 +24,7 @@
 #include "r_things.h"
 #include "i_video.h"
 #include "lua_hook.h"
+#include "st_dialogue.h"
 
 #ifdef HW3SOUND
 #include "hardware/hw3sound.h"
@@ -10180,4 +10181,18 @@ void A_CrawlaBattle(mobj_t *actor)
 			}
 		}
 	}
+}
+
+void A_TailsNPC(mobj_t* actor)
+{
+#ifdef HAVE_BLUA
+	if (LUA_CallAction("A_TailsNPC", actor))
+		return;
+#endif
+	
+	// No player found? Oh well...
+	if (!P_LookForPlayers(actor, true, false, 160*FRACUNIT))
+		return;
+
+	ST_StartDialogue(&testdialogue);
 }

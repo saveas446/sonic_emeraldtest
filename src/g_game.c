@@ -33,6 +33,7 @@
 #include "m_menu.h"
 #include "m_argv.h"
 #include "hu_stuff.h"
+#include "st_dialogue.h"
 #include "st_stuff.h"
 #include "z_zone.h"
 #include "i_video.h"
@@ -98,10 +99,20 @@ boolean canmove; // Are we moving around or selecting UI?
 menu_t* currentbattlemenu = &BattleMainMenuDef;
 UINT8 itemon_battle = 0; 
 mobj_t* battletarget = NULL;
+
 UINT8 moveanim_step = 0;
 moveanim_t moveanim = MOVEANIM_NONE;
 mobj_t* moveanim_source;
 mobj_t* moveanim_target;
+
+item_t inventory[50];
+UINT8 numitems;
+
+char* itemnames[NUMITEMTYPES] = {
+	"NONE",
+	"CHILI DOG",
+	"PIKACHU'S HEAD"
+};
 
 // menu demo things
 UINT8  numDemos      = 3;
@@ -1146,7 +1157,7 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 		side += ((axis * sidemove[1]) >> 10);
 	}
 
-	if (!((battle && !canmove) || moveanim_step)) {
+	if (!((battle && !canmove) || moveanim_step || indialogue)) {
 		// forward with key or button
 		axis = JoyAxis(AXISMOVE);
 		altaxis = JoyAxis(AXISLOOK);
@@ -1273,7 +1284,7 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 				xpcap += xpcap >> 2; 
 
 			// Increase level
-			if (players[displayplayer].xp > 100) {
+			if (players[displayplayer].xp >= xpcap) {
 
 				// Keep the change!
 				players[displayplayer].xp = players[displayplayer].xp - xpcap;
