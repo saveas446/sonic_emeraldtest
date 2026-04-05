@@ -14,9 +14,11 @@
 #include "doomstat.h"
 #include "g_battle.h"
 #include "g_game.h"
+#include "g_input.h"
 #include "p_local.h"
 #include "z_zone.h"
 #include "s_sound.h"
+#include "st_dialogue.h"
 #include "st_stuff.h"
 #include "p_polyobj.h"
 #include "r_main.h"
@@ -564,12 +566,20 @@ static inline void P_DoCTFStuff(void)
 	}
 }
 
+// Used to detect if we've pressed fire
+boolean fire_lastframe;
+boolean up_lastframe;
+boolean down_lastframe;
+boolean select_lastframe;
+boolean back_lastframe;
+
 //
 // P_Ticker
 //
 void P_Ticker(boolean run)
 {
 	INT32 i;
+	void (*routine)(INT32 choice); // for some casting problem
 
 	//Increment jointime even if paused.
 	for (i = 0; i < MAXPLAYERS; i++)
@@ -608,6 +618,105 @@ void P_Ticker(boolean run)
 				P_PlayerThink(&players[i]);
 	}
 	
+		if (!moveanim_step && !indialogue) {
+			if ((PLAYER1INPUTDOWN(gc_fire) && !fire_lastframe) && battle) {
+				// I'm sorry.
+				if (canmove)
+					canmove = false;
+				else
+					canmove = true;
+			}
+
+			// Ohhh god this is bad but min was behaving weird :(
+			if ((PLAYER1INPUTDOWN(gc_forward) && !up_lastframe) && battle && !canmove) {
+				if (itemon_battle == 0)
+					itemon_battle = currentbattlemenu->numitems - 1;
+				else
+					itemon_battle--;
+			}
+				
+
+			if ((PLAYER1INPUTDOWN(gc_backward) && !down_lastframe) && battle && !canmove) {
+				if (itemon_battle >= currentbattlemenu->numitems - 1)
+					itemon_battle = 0;
+				else
+					itemon_battle++;
+			}
+
+
+			// Select in menu
+			if ((PLAYER1INPUTDOWN(gc_jump) && !select_lastframe) && battle && !canmove) {
+				switch (currentbattlemenu->menuitems[itemon_battle].status & IT_TYPE)
+				{
+					case IT_CALL:
+					routine = currentbattlemenu->menuitems[itemon_battle].itemaction;
+					routine(67); // I don't know what to put here, placeholder for now 
+					break;
+					case IT_SUBMENU:
+					currentbattlemenu->lastOn = itemon_battle; // Save cursor position
+					currentbattlemenu = (menu_t*)currentbattlemenu->menuitems[itemon_battle].itemaction;
+					itemon_battle = currentbattlemenu->lastOn; // Restore cursor position
+					break;
+					default:
+					break;
+				}
+			}
+
+			// Go back in menu
+			if ((PLAYER1INPUTDOWN(gc_use) && !back_lastframe) && battle && !canmove) {
+				if (currentbattlemenu->prevMenu != NULL) {
+					currentbattlemenu = currentbattlemenu->prevMenu;
+					itemon_battle = currentbattlemenu->lastOn; // Restore cursor position
+				}
+			}
+		}
+
+		fire_lastframe = PLAYER1INPUTDOWN(gc_fire);
+		up_lastframe = PLAYER1INPUTDOWN(gc_forward);
+		down_lastframe = PLAYER1INPUTDOWN(gc_backward);
+		select_lastframe = PLAYER1INPUTDOWN(gc_jump);
+		back_lastframe = PLAYER1INPUTDOWN(gc_use);
+
+		// End battle
+		if (battle && battletarget && battletarget->health < 1) {
+			battle = false;
+
+			// GIVE XP
+			UINT8 xp_min, xp_max;
+
+			switch (battletarget->type) {
+				case MT_BLUECRAWLA:
+				default:
+				xp_min = 20;
+				xp_max = 35;
+			}
+
+			players[displayplayer].xp += P_RandomRange(xp_min, xp_max);
+
+			UINT16 xpcap = 100;
+
+			// Multiply by 1.25 for every level
+			for (int i = 1; i < players[displayplayer].level; i++)
+				xpcap += xpcap >> 2; 
+
+			// Increase level
+			if (players[displayplayer].xp >= xpcap) {
+
+				// Keep the change!
+				players[displayplayer].xp = players[displayplayer].xp - xpcap;
+				players[displayplayer].level++;
+			}
+
+			// GIVE RINGS
+
+			// Give the player 1 eighth of the battletarget's spawn health in rings
+			players[displayplayer].rings += battletarget->info->spawnhealth >> 3;
+			
+			// Battletarget is not in use anymore
+			battletarget = NULL;
+		}
+
+
 	if (moveanim_step == 1) {
 		switch (moveanim) {
 			case MOVEANIM_STROLL:

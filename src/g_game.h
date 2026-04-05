@@ -69,6 +69,20 @@ extern consvar_t cv_ghost_bestscore, cv_ghost_besttime, cv_ghost_bestrings, cv_g
 #define MAXPLMOVE (50)
 #define SLOWTURNTICS (6)
 
+typedef enum
+{
+	AXISNONE = 0,
+	AXISTURN,
+	AXISMOVE,
+	AXISLOOK,
+	AXISSTRAFE,
+	AXISDEAD, //Axises that don't want deadzones
+	AXISJUMP,
+	AXISSPIN,
+	AXISFIRE,
+	AXISFIRENORMAL,
+} axis_input_e;
+
 // build an internal map name MAPxx from map number
 const char *G_BuildMapName(INT32 map);
 void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics);

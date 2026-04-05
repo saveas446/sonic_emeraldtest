@@ -424,20 +424,6 @@ consvar_t cv_useranalog = {"useranalog", "Off", CV_SAVE|CV_CALL, CV_OnOff, UserA
 consvar_t cv_useranalog2 = {"useranalog2", "Off", CV_SAVE|CV_CALL, CV_OnOff, UserAnalog2_OnChange, 0, NULL, NULL, 0, 0, NULL};
 #endif
 
-typedef enum
-{
-	AXISNONE = 0,
-	AXISTURN,
-	AXISMOVE,
-	AXISLOOK,
-	AXISSTRAFE,
-	AXISDEAD, //Axises that don't want deadzones
-	AXISJUMP,
-	AXISSPIN,
-	AXISFIRE,
-	AXISFIRENORMAL,
-} axis_input_e;
-
 #if defined (_WII) || defined  (WMINPUT)
 consvar_t cv_turnaxis = {"joyaxis_turn", "LStick.X", CV_SAVE, joyaxis_cons_t, NULL, 0, NULL, NULL, 0, 0, NULL};
 consvar_t cv_moveaxis = {"joyaxis_move", "LStick.Y", CV_SAVE, joyaxis_cons_t, NULL, 0, NULL, NULL, 0, 0, NULL};
@@ -1033,13 +1019,6 @@ static fixed_t forwardmove[2] = {25<<FRACBITS>>16, 50<<FRACBITS>>16};
 static fixed_t sidemove[2] = {25<<FRACBITS>>16, 50<<FRACBITS>>16}; // faster!
 static fixed_t angleturn[3] = {640, 1280, 320}; // + slow turn
 
-// Used to detect if we've pressed fire
-boolean fire_lastframe;
-boolean up_lastframe;
-boolean down_lastframe;
-boolean select_lastframe;
-boolean back_lastframe;
-
 void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 {
 	boolean forcestrafe = false;
@@ -1049,7 +1028,6 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 	boolean turnleft, turnright, mouseaiming, analogjoystickmove, gamepadjoystickmove, thisjoyaiming;
 	player_t *player = &players[consoleplayer];
 	camera_t *thiscam = &camera;
-	void (*routine)(INT32 choice); // for some casting problem
 
 	static INT32 turnheld; // for accelerative turning
 	static boolean keyboard_look; // true if lookup/down using keyboard
@@ -1157,6 +1135,8 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 		side += ((axis * sidemove[1]) >> 10);
 	}
 
+		// fire with any button/key
+		axis = JoyAxis(AXISFIRE);
 		// forward with key or button
 		axis = JoyAxis(AXISMOVE);
 		altaxis = JoyAxis(AXISLOOK);
@@ -1195,109 +1175,6 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics)
 			cmd->buttons |= (UINT16)(i + 1);
 			break;
 		}
-
-
-	if (gamestate == GS_LEVEL) {
-		if (!moveanim_step && !indialogue) {
-			// fire with any button/key
-			axis = JoyAxis(AXISFIRE);
-			if ((PLAYER1INPUTDOWN(gc_fire) && !fire_lastframe) && battle) {
-				// I'm sorry.
-				if (canmove)
-					canmove = false;
-				else
-					canmove = true;
-			}
-
-			// Ohhh god this is bad but min was behaving weird :(
-			if ((PLAYER1INPUTDOWN(gc_forward) && !up_lastframe) && battle && !canmove) {
-				if (itemon_battle == 0)
-					itemon_battle = currentbattlemenu->numitems - 1;
-				else
-					itemon_battle--;
-			}
-				
-
-			if ((PLAYER1INPUTDOWN(gc_backward) && !down_lastframe) && battle && !canmove) {
-				if (itemon_battle >= currentbattlemenu->numitems - 1)
-					itemon_battle = 0;
-				else
-					itemon_battle++;
-			}
-
-
-			// Select in menu
-			if ((PLAYER1INPUTDOWN(gc_jump) && !select_lastframe) && battle && !canmove) {
-				switch (currentbattlemenu->menuitems[itemon_battle].status & IT_TYPE)
-				{
-					case IT_CALL:
-					routine = currentbattlemenu->menuitems[itemon_battle].itemaction;
-					routine(67); // I don't know what to put here, placeholder for now 
-					break;
-					case IT_SUBMENU:
-					currentbattlemenu->lastOn = itemon_battle; // Save cursor position
-					currentbattlemenu = (menu_t*)currentbattlemenu->menuitems[itemon_battle].itemaction;
-					itemon_battle = currentbattlemenu->lastOn; // Restore cursor position
-					break;
-					default:
-					break;
-				}
-			}
-
-			// Go back in menu
-			if ((PLAYER1INPUTDOWN(gc_use) && !back_lastframe) && battle && !canmove) {
-				if (currentbattlemenu->prevMenu != NULL) {
-					currentbattlemenu = currentbattlemenu->prevMenu;
-					itemon_battle = currentbattlemenu->lastOn; // Restore cursor position
-				}
-			}
-		}
-
-		fire_lastframe = PLAYER1INPUTDOWN(gc_fire);
-		up_lastframe = PLAYER1INPUTDOWN(gc_forward);
-		down_lastframe = PLAYER1INPUTDOWN(gc_backward);
-		select_lastframe = PLAYER1INPUTDOWN(gc_jump);
-		back_lastframe = PLAYER1INPUTDOWN(gc_use);
-
-		// End battle
-		if (battle && battletarget && battletarget->health < 1) {
-			battle = false;
-
-			// GIVE XP
-			UINT8 xp_min, xp_max;
-
-			switch (battletarget->type) {
-				case MT_BLUECRAWLA:
-				default:
-				xp_min = 20;
-				xp_max = 35;
-			}
-
-			players[displayplayer].xp += P_RandomRange(xp_min, xp_max);
-
-			UINT16 xpcap = 100;
-
-			// Multiply by 1.25 for every level
-			for (int i = 1; i < players[displayplayer].level; i++)
-				xpcap += xpcap >> 2; 
-
-			// Increase level
-			if (players[displayplayer].xp >= xpcap) {
-
-				// Keep the change!
-				players[displayplayer].xp = players[displayplayer].xp - xpcap;
-				players[displayplayer].level++;
-			}
-
-			// GIVE RINGS
-
-			// Give the player 1 eighth of the battletarget's spawn health in rings
-			players[displayplayer].rings += battletarget->info->spawnhealth >> 3;
-			
-			// Battletarget is not in use anymore
-			battletarget = NULL;
-		}
-	}
 
 		// Disable movement if you're selecting battle UI
 		// fire normal with any button/key
