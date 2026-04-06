@@ -99,6 +99,7 @@ boolean canmove; // Are we moving around or selecting UI?
 menu_t* currentbattlemenu = &BattleMainMenuDef;
 UINT8 itemon_battle = 0; 
 mobj_t* battletarget = NULL;
+boolean specialbattlemenu;
 
 UINT8 moveanim_step = 0;
 moveanim_t moveanim = MOVEANIM_NONE;

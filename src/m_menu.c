@@ -43,6 +43,7 @@
 #include "z_zone.h"
 #include "w_wad.h"
 #include "p_local.h"
+#include "p_tick.h"
 #include "p_mobj.h"
 #include "p_setup.h"
 #include "f_finale.h"
@@ -493,27 +494,55 @@ typedef enum
 	mpause_quit
 } mpause_e;
 
+INT8 inventory_itemon;
+
 static void M_HandleInventoryMenu(INT32 choice) {
 	switch (choice)
 	{
 		case KEY_ESCAPE:
-		//case KEY_ENTER:
 			M_ClearMenus(true);
 			break;
+		case KEY_ENTER:
+			P_UseItem(&inventory[inventory_itemon-1], inventory_itemon-1); // Apply item effect
+			break;
+		case KEY_UPARROW:
+			inventory_itemon--;
+			break;
+		case KEY_DOWNARROW:
+			inventory_itemon++;
+			break;
 	}
+
+	if (inventory_itemon > numitems)
+		inventory_itemon = 0;
+
+	if (inventory_itemon < 0)
+		inventory_itemon = numitems;
 }
 
-static void M_DrawInventoryMenu(INT32 choice) {
+void M_DrawInventoryMenu(INT32 choice) {
+
+	V_DrawCenteredString(67, 141, V_ALLOWLOWERCASE, "BACK");
+
 	for (int i = 0; i < numitems; i++) {
 		if (inventory[i].quantity != 1)
-			V_DrawCenteredString(67, (i * 20) + 40, V_ALLOWLOWERCASE, va("%s x%d", itemnames[inventory[i].item], inventory[i].quantity));
+			V_DrawCenteredString(67, (i * 16) + 157, V_ALLOWLOWERCASE, va("%s x%d", itemnames[inventory[i].item], inventory[i].quantity));
 		else
-			V_DrawCenteredString(67, (i * 20) + 40, V_ALLOWLOWERCASE, va("%s", itemnames[inventory[i].item]));
+			V_DrawCenteredString(67, (i * 16) + 157, V_ALLOWLOWERCASE, va("%s", itemnames[inventory[i].item]));
+	}
+
+	if (battle) {
+		// Do not draw cursor if moving around
+		if (!canmove)
+			V_DrawScaledPatch(10, (itemon_battle * 16) + 141, 0, W_CachePatchName("M_CURSOR", PU_CACHE)); // draw cursor
+	} else {
+		V_DrawScaledPatch(10, (inventory_itemon * 16) + 141, 0, W_CachePatchName("M_CURSOR", PU_CACHE)); // draw cursor
 	}
 }
 
 
 static void M_Inventory(INT32 choice) {
+	itemon_battle = 0;
 	M_SetupNextMenu(&SInventoryDef);
 }
 
@@ -8054,6 +8083,22 @@ static void M_HandleFogColor(INT32 choice)
 // ---------
 
 
+static menuitem_t ItemsMenu[] =
+{
+	{IT_STRING, NULL, "Dummy", NULL, 0},
+};
+
+menu_t ItemsMenuDef = { 
+	((void *)0), 
+	sizeof(ItemsMenu)/sizeof(menuitem_t), 
+	&BattleMainMenuDef, 
+	ItemsMenu, 
+	M_DrawInventoryMenu, 
+	40, 72, 
+	0, 
+	((void *)0)
+};
+
 void M_Attack(int ch) {
 	P_PlayerAttack();
 	currentbattlemenu = &BattleMainMenuDef;
@@ -8063,7 +8108,6 @@ void M_CPAttack(int ch) {
 	P_PlayerCPAttack();
 }
 void M_SpecialAttack(int ch) {}
-void M_ItemsMenu(int ch) {}
 void M_Escape(int ch) {
 	P_PlayerEscape();
 }
@@ -8073,7 +8117,7 @@ static menuitem_t BattleMainMenu[] =
 	{IT_CALL|IT_STRING, NULL, "Attack",        &M_Attack,         128},
 	{IT_CALL|IT_STRING, NULL, "Chaos Power",   &M_CPAttack,       128+16},
 	{IT_CALL|IT_STRING, NULL, "Special",       &M_SpecialAttack,  128+32},
-	{IT_CALL|IT_STRING, NULL, "Items",         &M_ItemsMenu,      128+48},
+	{IT_CALL|IT_STRING, NULL, "Items",         &P_ItemsMenu,      128+48},
 	{IT_CALL|IT_STRING, NULL, "Escape",        &M_Escape,         128+64},
 };
 

@@ -72,6 +72,7 @@ void M_QuitResponse(INT32 ch);
 // Determines whether to show a level in the list
 boolean M_CanShowLevelInList(INT32 mapnum, INT32 gt);
 
+extern void M_DrawInventoryMenu();
 
 // flags for items in the menu
 // menu handle (what we do when key is pressed
@@ -307,5 +308,6 @@ void Addons_option_Onchange(void);
 // BATTLE MENU STUFF
 
 extern menu_t BattleMainMenuDef;
+extern menu_t ItemsMenuDef;
 
 #endif //__X_MENU__

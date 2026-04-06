@@ -566,6 +566,37 @@ static inline void P_DoCTFStuff(void)
 	}
 }
 
+void P_ItemsMenu(int ch) {
+	specialbattlemenu = true;
+	currentbattlemenu = &ItemsMenuDef;
+}
+
+// Apply item's effect
+void P_UseItem(item_t* item, UINT8 index) {
+	switch (item->item) {
+		case ITEM_NONE:
+		CONS_Printf("Uhhhh.... This should NEVER happen! Report to Save!!\n");
+		break;
+		case ITEM_CHILIDOG:
+		players[displayplayer].mo->health = min(mobjinfo[players[displayplayer].mo->type].spawnhealth, players[displayplayer].mo->health + P_RandomRange(30, 40));
+		break;
+		case ITEM_PIKACHUHEAD:
+		CONS_Printf("Unimplemented :(\n");
+		break;
+	}
+
+	if (item->quantity > 1) {
+		item->quantity--;
+	} else {
+		for (int i = index; i < numitems; i++) {
+			inventory[i-1].item = inventory[i].item;
+			inventory[i-1].quantity = inventory[i].quantity;
+		}
+		numitems--;
+	}
+	
+}
+
 // Used to detect if we've pressed fire
 boolean fire_lastframe;
 boolean up_lastframe;
@@ -618,6 +649,8 @@ void P_Ticker(boolean run)
 				P_PlayerThink(&players[i]);
 	}
 	
+	// MASSIVE TODO: Make the battle menus use the game's real menu system instead of this weird fake one
+
 		if (!moveanim_step && !indialogue) {
 			if ((PLAYER1INPUTDOWN(gc_fire) && !fire_lastframe) && battle) {
 				// I'm sorry.
@@ -627,46 +660,91 @@ void P_Ticker(boolean run)
 					canmove = true;
 			}
 
-			// Ohhh god this is bad but min was behaving weird :(
-			if ((PLAYER1INPUTDOWN(gc_forward) && !up_lastframe) && battle && !canmove) {
-				if (itemon_battle == 0)
-					itemon_battle = currentbattlemenu->numitems - 1;
-				else
-					itemon_battle--;
-			}
-				
-
-			if ((PLAYER1INPUTDOWN(gc_backward) && !down_lastframe) && battle && !canmove) {
-				if (itemon_battle >= currentbattlemenu->numitems - 1)
-					itemon_battle = 0;
-				else
-					itemon_battle++;
-			}
-
-
-			// Select in menu
-			if ((PLAYER1INPUTDOWN(gc_jump) && !select_lastframe) && battle && !canmove) {
-				switch (currentbattlemenu->menuitems[itemon_battle].status & IT_TYPE)
-				{
-					case IT_CALL:
-					routine = currentbattlemenu->menuitems[itemon_battle].itemaction;
-					routine(67); // I don't know what to put here, placeholder for now 
-					break;
-					case IT_SUBMENU:
-					currentbattlemenu->lastOn = itemon_battle; // Save cursor position
-					currentbattlemenu = (menu_t*)currentbattlemenu->menuitems[itemon_battle].itemaction;
-					itemon_battle = currentbattlemenu->lastOn; // Restore cursor position
-					break;
-					default:
-					break;
+			if (!specialbattlemenu) {
+				// Ohhh god this is bad but min was behaving weird :(
+				if ((PLAYER1INPUTDOWN(gc_forward) && !up_lastframe) && battle && !canmove) {
+					if (itemon_battle == 0)
+						itemon_battle = currentbattlemenu->numitems - 1;
+					else
+						itemon_battle--;
 				}
-			}
+					
 
-			// Go back in menu
-			if ((PLAYER1INPUTDOWN(gc_use) && !back_lastframe) && battle && !canmove) {
-				if (currentbattlemenu->prevMenu != NULL) {
-					currentbattlemenu = currentbattlemenu->prevMenu;
-					itemon_battle = currentbattlemenu->lastOn; // Restore cursor position
+				if ((PLAYER1INPUTDOWN(gc_backward) && !down_lastframe) && battle && !canmove) {
+					if (itemon_battle >= currentbattlemenu->numitems - 1)
+						itemon_battle = 0;
+					else
+						itemon_battle++;
+				}
+
+				// Select in menu
+				if ((PLAYER1INPUTDOWN(gc_jump) && !select_lastframe) && battle && !canmove) {
+					switch (currentbattlemenu->menuitems[itemon_battle].status & IT_TYPE)
+					{
+						case IT_CALL:
+						routine = currentbattlemenu->menuitems[itemon_battle].itemaction;
+						routine(67); // I don't know what to put here, placeholder for now 
+						break;
+						case IT_SUBMENU:
+						currentbattlemenu->lastOn = itemon_battle; // Save cursor position
+						currentbattlemenu = (menu_t*)currentbattlemenu->menuitems[itemon_battle].itemaction;
+						itemon_battle = currentbattlemenu->lastOn; // Restore cursor position
+						break;
+						default:
+						break;
+					}
+				}
+
+				// Go back in menu
+				if ((PLAYER1INPUTDOWN(gc_use) && !back_lastframe) && battle && !canmove) {
+					if (currentbattlemenu->prevMenu != NULL) {
+						currentbattlemenu = currentbattlemenu->prevMenu;
+						itemon_battle = currentbattlemenu->lastOn; // Restore cursor position
+					}
+				} 
+			} else {
+				// May Charles Babbage himself strike me down for this terrible, no good, awful, hacky code.
+				// I made a mistake earlier and now that I need to add an item selection menu the codebase is paying the price.
+				if (currentbattlemenu == &ItemsMenuDef) {
+					// Fix a stupid bug
+					if (itemon_battle >= numitems + 1)
+						itemon_battle = 0;
+
+					if ((PLAYER1INPUTDOWN(gc_forward) && !up_lastframe) && battle && !canmove) {
+						if (itemon_battle == 0)
+							itemon_battle = numitems;
+						else
+							itemon_battle--;
+					}
+						
+	
+					if ((PLAYER1INPUTDOWN(gc_backward) && !down_lastframe) && battle && !canmove) {
+						if (itemon_battle >= numitems + 1)
+							itemon_battle = 0;
+						else
+							itemon_battle++;
+					}	
+					
+				// Select in menu
+				if ((PLAYER1INPUTDOWN(gc_jump) && !select_lastframe) && battle && !canmove) {
+					// Selected BACK
+					if (!itemon_battle) {
+						currentbattlemenu = currentbattlemenu->prevMenu;
+						itemon_battle = currentbattlemenu->lastOn; // Restore cursor position		
+						specialbattlemenu = false;				
+					} else {
+						P_UseItem(&inventory[itemon_battle-1], itemon_battle-1); // Apply item effect
+					}
+				}
+
+					// Go back in menu
+					if ((PLAYER1INPUTDOWN(gc_use) && !back_lastframe) && battle && !canmove) {
+						if (currentbattlemenu->prevMenu != NULL) {
+							currentbattlemenu = currentbattlemenu->prevMenu;
+							itemon_battle = currentbattlemenu->lastOn; // Restore cursor position
+							specialbattlemenu = false;
+						}
+					} 
 				}
 			}
 		}

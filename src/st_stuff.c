@@ -1753,12 +1753,17 @@ static void ST_doItemFinderIconsAndSound(void)
 // Draw menus when in battle
 static void ST_drawBattleMenu(void)
 {
-	for (short i = 0; i < currentbattlemenu->numitems; i++)
-		V_DrawCenteredString(80, currentbattlemenu->menuitems[i].alphaKey, 0, currentbattlemenu->menuitems[i].text);
-	
-	// Do not draw cursor if moving around
-	if (!canmove)
-		V_DrawScaledPatch(10, currentbattlemenu->menuitems[itemon_battle].alphaKey, 0, W_CachePatchName("M_CURSOR", PU_CACHE)); // draw cursor
+	if (!specialbattlemenu) {
+		for (short i = 0; i < currentbattlemenu->numitems; i++)
+			V_DrawCenteredString(80, currentbattlemenu->menuitems[i].alphaKey, 0, currentbattlemenu->menuitems[i].text);
+		
+		// Do not draw cursor if moving around
+		if (!canmove)
+			V_DrawScaledPatch(10, currentbattlemenu->menuitems[itemon_battle].alphaKey, 0, W_CachePatchName("M_CURSOR", PU_CACHE)); // draw cursor
+	} else {
+		if (currentbattlemenu == &ItemsMenuDef)
+			M_DrawInventoryMenu();
+	}
 }
 
 // Draw the status bar overlay, customisable: the user chooses which

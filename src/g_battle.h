@@ -27,6 +27,7 @@ extern boolean canmove;
 extern menu_t* currentbattlemenu;
 extern UINT8 itemon_battle;
 extern mobj_t* battletarget;
+extern boolean specialbattlemenu;
 
 extern UINT8 moveanim_step; // Which step of the move animation are we at?
 extern moveanim_t moveanim; // WHICH move animation is playing?
