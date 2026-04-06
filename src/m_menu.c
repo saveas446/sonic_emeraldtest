@@ -8114,11 +8114,11 @@ void M_Escape(int ch) {
 
 static menuitem_t BattleMainMenu[] =
 {
-	{IT_CALL|IT_STRING, NULL, "Attack",        &M_Attack,         128},
-	{IT_CALL|IT_STRING, NULL, "Chaos Power",   &M_CPAttack,       128+16},
-	{IT_CALL|IT_STRING, NULL, "Special",       &M_SpecialAttack,  128+32},
-	{IT_CALL|IT_STRING, NULL, "Items",         &P_ItemsMenu,      128+48},
-	{IT_CALL|IT_STRING, NULL, "Escape",        &M_Escape,         128+64},
+	{IT_CALL|IT_STRING, NULL, "Attack",        &M_Attack,         146},
+	{IT_CALL|IT_STRING, NULL, "Chaos Power",   &M_CPAttack,       146+11},
+	{IT_CALL|IT_STRING, NULL, "Special",       &M_SpecialAttack,  146+22},
+	{IT_CALL|IT_STRING, NULL, "Items",         &P_ItemsMenu,      146+33},
+	{IT_CALL|IT_STRING, NULL, "Escape",        &M_Escape,         146+44},
 };
 
 menu_t BattleMainMenuDef = { 
