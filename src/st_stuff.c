@@ -1755,7 +1755,7 @@ static void ST_drawBattleMenu(void)
 {
 	if (!specialbattlemenu) {
 		for (short i = 0; i < currentbattlemenu->numitems; i++)
-			V_DrawCenteredString(62, currentbattlemenu->menuitems[i].alphaKey, 0, currentbattlemenu->menuitems[i].text);
+			V_DrawCenteredString(80, currentbattlemenu->menuitems[i].alphaKey, 0, currentbattlemenu->menuitems[i].text);
 		
 		// Do not draw cursor if moving around
 		if (!canmove)
@@ -1798,14 +1798,12 @@ static void ST_overlayDrawer(void)
 		}
 	// In-battle HUD
 	} else {
-		V_DrawFill(0, 0, 320, 9, 31);
-		V_DrawFill(0, 191, 320, 9, 31);
-		V_DrawFill(0, 139, 112, 61, 31);
-		V_DrawFill(194, 170, 126, 30, 31);
-		// Draw at 0.75 scale
-		V_DrawFixedPatch(174 << FRACBITS, 200 << FRACBITS, FRACUNIT, 0, W_CachePatchName("SBOSICON", PU_CACHE), NULL);
-
 		if (!moveanim_step) {
+			V_DrawRightAlignedString(BASEVIDWIDTH, 152, 0, va("BATTLE GAUGE: %d", stplyr->battlegauge));
+			V_DrawRightAlignedString(BASEVIDWIDTH, 160, 0, va("DISTANCE: %d", R_PointToDist2(stplyr->mo->x, stplyr->mo->y, battletarget->x, battletarget->y) >> FRACBITS));
+			V_DrawRightAlignedString(BASEVIDWIDTH, 172, 0, va("HEALTH: %d", stplyr->mo->health));
+			V_DrawRightAlignedString(BASEVIDWIDTH, 180, 0, va("ENEMYH: %d", battletarget->health));
+
 			ST_drawBattleMenu();
 		}
 	}
