@@ -1790,11 +1790,11 @@ static void ST_overlayDrawer(void)
 			UINT16 xpcap = 100;
 
 			// Multiply by 1.25 for every level
-			for (int i = 1; i < players[displayplayer].level; i++)
-				xpcap += xpcap >> 2; 
+			for (int i = 1; i < players[displayplayer].mo->level; i++)
+				xpcap += xpcap >> 1; 
 
 			V_DrawString(18, 8, 0, va("XP: %d/%d", stplyr->xp, xpcap));
-			V_DrawString(18, 16, 0, va("LV: %d", stplyr->level));
+			V_DrawString(18, 16, 0, va("LV: %d", stplyr->mo->level));
 		}
 	// In-battle HUD
 	} else {

@@ -578,7 +578,13 @@ void P_UseItem(item_t* item, UINT8 index) {
 		CONS_Printf("Uhhhh.... This should NEVER happen! Report to Save!!\n");
 		break;
 		case ITEM_CHILIDOG:
-		players[displayplayer].mo->health = min(mobjinfo[players[displayplayer].mo->type].spawnhealth, players[displayplayer].mo->health + P_RandomRange(30, 40));
+
+		float health = (float)players[displayplayer].mo->info->spawnhealth;
+
+		for (int i = 1; i < players[displayplayer].mo->level; i++)
+			health *= 1.1;			
+		
+		players[displayplayer].mo->health = min((int)ceil(health), players[displayplayer].mo->health + P_RandomRange(30, 40));
 		break;
 		case ITEM_PIKACHUHEAD:
 		CONS_Printf("Unimplemented :(\n");
@@ -759,36 +765,41 @@ void P_Ticker(boolean run)
 		if (battle && battletarget && battletarget->health < 1) {
 			battle = false;
 
-			// GIVE XP
-			UINT8 xp_min, xp_max;
+			float xp = battletarget->attackstat + battletarget->defensestat + battletarget->chaospowerstat;
+			// Multiply by random range between 0.7 and 1.2
+			xp *= ((float)P_RandomRange(70, 120)) / 100;
 
-			switch (battletarget->type) {
-				case MT_BLUECRAWLA:
-				default:
-				xp_min = 20;
-				xp_max = 35;
-			}
-
-			players[displayplayer].xp += P_RandomRange(xp_min, xp_max);
+			players[displayplayer].xp += xp;
 
 			UINT16 xpcap = 100;
 
-			// Multiply by 1.25 for every level
-			for (int i = 1; i < players[displayplayer].level; i++)
-				xpcap += xpcap >> 2; 
+			// Multiply by 1.5 for every level
+			for (int i = 1; i < players[displayplayer].mo->level; i++)
+				xpcap += xpcap >> 1; 
 
 			// Increase level
 			if (players[displayplayer].xp >= xpcap) {
 
 				// Keep the change!
 				players[displayplayer].xp = players[displayplayer].xp - xpcap;
-				players[displayplayer].level++;
+				players[displayplayer].mo->level++;
+
+				players[displayplayer].mo->attackstat = ceil((float)players[displayplayer].mo->attackstat * 1.1);
+				players[displayplayer].mo->defensestat = ceil((float)players[displayplayer].mo->defensestat * 1.1);
+				players[displayplayer].mo->chaospowerstat = ceil((float)players[displayplayer].mo->chaospowerstat * 1.1);
+
+				//CONS_Printf("%d %d %d\n", players[displayplayer].mo->attackstat, players[displayplayer].mo->defensestat, players[displayplayer].mo->chaospowerstat);
 			}
 
 			// GIVE RINGS
 
+			float health = (float)battletarget->info->spawnhealth;
+
+			for (int i = 1; i < battletarget->level; i++)
+				health *= 1.1;			
+
 			// Give the player 1 eighth of the battletarget's spawn health in rings
-			players[displayplayer].rings += battletarget->info->spawnhealth >> 3;
+			players[displayplayer].rings += (int)ceil(health) >> 3;
 			
 			// Battletarget is not in use anymore
 			battletarget = NULL;

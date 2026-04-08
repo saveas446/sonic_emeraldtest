@@ -7857,6 +7857,21 @@ mobj_t *P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
 			break;
 	}
 
+	switch (mobj->type) {
+		case MT_PLAYER:
+			mobj->attackstat = 10;
+			mobj->defensestat = 9;
+			mobj->chaospowerstat = 9;
+			mobj->level = 1;	
+			break;
+		case MT_BLUECRAWLA:
+			mobj->attackstat = 9;
+			mobj->defensestat = 9;
+			mobj->chaospowerstat = 7;	
+			mobj->level = 1;	
+			break;
+	}
+
 	if (!(mobj->flags & MF_NOTHINK))
 		P_AddThinker(&mobj->thinker);
 

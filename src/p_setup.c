@@ -997,9 +997,6 @@ static void P_LoadThings(void)
 #endif
 				mtsector->floorheight)>>FRACBITS;
 
-		if (mt->type == 1602)
-			CONS_Printf("Tails NPC\n");
-
 		if (mt->type == 1700 // MT_AXIS
 			|| mt->type == 1701 // MT_AXISTRANSFER
 			|| mt->type == 1702) // MT_AXISTRANSFERLINE
@@ -3196,7 +3193,6 @@ boolean P_SetupLevel(boolean skipprecip)
 	// Just reset all party members to Level 1 with 0 XP for now
 	for (i = 0; i < MAXPLAYERS; i++) {
 		players[i].xp = 0;
-		players[i].level = 1;
 		players[i].rings = 0; // BROKE INDIVIDUAL ALERT
 	}
 

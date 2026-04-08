@@ -353,6 +353,12 @@ typedef struct mobj_s
 	fixed_t originalpos[2];
 	angle_t originalangle;
 
+	UINT8 level; // Used internally for calculating damage
+
+	UINT16 attackstat;
+	UINT16 defensestat;
+	UINT16 chaospowerstat;
+
 	// Extra values are for internal use for whatever you want
 	INT32 extravalue1;
 	INT32 extravalue2;

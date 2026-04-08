@@ -433,7 +433,6 @@ typedef struct player_s
 	UINT16 battlegauge;
 
 	UINT16 xp;
-	UINT8 level;
 
 	UINT32 rings; // Yes, separate from health here. Rings track currency, not health.
 

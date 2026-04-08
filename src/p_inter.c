@@ -295,41 +295,38 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 	// If we're touching the battletarget during the stroll animation, move on to the next step
 	if (moveanim_step == 1 && special == moveanim_target && moveanim == MOVEANIM_STROLL && toucher == moveanim_source)
 	{
-		int dmg_min, dmg_max;
+		float damage;
 
+		// TODO: Replace attackstat with chaospowerstat if this is a Chaos Power attack
+		damage = (moveanim_source->level) + 2;
+		damage *= ((float)moveanim_source->attackstat / (float)moveanim_target->defensestat);
+		damage *= 3;
+		damage += 2;
+
+		// Apply randomness
+		damage *= ((float)P_RandomRange(70, 120)) / 100;
+		
 		// Damage enemy, if we're a player deplete the battle gauge
-		if (tmthing->player)
-			tmthing->player->battlegauge = max(0, tmthing->player->battlegauge - 360); // Don't go below 0
+		if (moveanim_source->player)
+			moveanim_source->player->battlegauge = max(0, moveanim_source->player->battlegauge - 360); // Don't go below 0
 
-		// Set damage amount based on mobj type
-		switch (moveanim_source->type) {
-			case MT_PLAYER:
-			dmg_min = 15;
-			dmg_max = 25;
-			break;
-			case MT_BLUECRAWLA:
-			default:
-			dmg_min = 6;
-			dmg_max = 12;
-			break;
-		}
-
+		
 		// 20% chance for critical hit!!
 		int crit_chance = 20;
 
-		// If your gauge is at least 1 and a half times filled, increase critical hit chance
+		/*// If your gauge is at least 1 and a half times filled, increase critical hit chance
 		if (moveanim_source->player && moveanim_source->player->battlegauge > 360 * 1.5)
-			crit_chance = 40;
+			crit_chance = 40;*/
 
 
 		// Apply critical hit		
 		if (P_RandomRange(1, 100) <= crit_chance) {
-			dmg_min *= 1.5;
-			dmg_max *= 1.5;
+			damage *= 1.5;
 			CONS_Printf("Critical hit!!\n");
 		}
 
-		P_DamageMobj(moveanim_target, NULL, tmthing, P_RandomRange(dmg_min, dmg_max));
+		//CONS_Printf("Damage: %f\n", damage);
+		P_DamageMobj(moveanim_target, NULL, tmthing, (int)damage);
 
 		moveanim_step = 2;
 		return;

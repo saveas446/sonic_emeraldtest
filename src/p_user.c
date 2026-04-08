@@ -9569,12 +9569,17 @@ void P_PlayerCPAttack(void)
 	if (players[displayplayer].battlegauge > 720) {
 		// Heal yo'self!
 
+		float health = (float)players[displayplayer].mo->info->spawnhealth;
+
+		for (int i = 1; i < players[displayplayer].mo->level; i++)
+			health *= 1.1;			
+
 		// Just don't bother if we have all our HP
-		if (players[displayplayer].mo->health >= mobjinfo[players[displayplayer].mo->type].spawnhealth)
+		if (players[displayplayer].mo->health >= (int)ceil(health))
 			return;
 
-		// Make sure we don't go over the spawnhealth, when we implement leveling up we're going to need to do something else
-		players[displayplayer].mo->health = min(mobjinfo[players[displayplayer].mo->type].spawnhealth, players[displayplayer].mo->health + P_RandomRange(15, 20));
+		// Make sure we don't go over the max health, when we implement leveling up we're going to need to do something else
+		players[displayplayer].mo->health = min((int)ceil(health), players[displayplayer].mo->health + P_RandomRange(15, 20));
 
 		players[displayplayer].battlegauge = max(0, players[displayplayer].battlegauge - 720); // Drain battle gauge
 	}
