@@ -664,6 +664,43 @@ void P_EmeraldManager(void)
 	}
 }
 
+void P_BattleDamageMobj() {
+	float damage;
+
+	// TODO: Replace attackstat with chaospowerstat if this is a Chaos Power attack
+	damage = (moveanim_source->level) + 2;
+	damage *= ((float)moveanim_source->attackstat / (float)moveanim_target->defensestat);
+	damage *= 3;
+	damage += 2;
+
+	// Apply randomness
+	damage *= ((float)P_RandomRange(70, 120)) / 100;
+	
+	// Damage enemy, if we're a player deplete the battle gauge
+	if (moveanim_source->player)
+		moveanim_source->player->battlegauge = max(0, moveanim_source->player->battlegauge - 360); // Don't go below 0
+
+	
+	// 20% chance for critical hit!!
+	int crit_chance = 20;
+
+	/*// If your gauge is at least 1 and a half times filled, increase critical hit chance
+	if (moveanim_source->player && moveanim_source->player->battlegauge > 360 * 1.5)
+		crit_chance = 40;*/
+
+
+	// Apply critical hit		
+	if (P_RandomRange(1, 100) <= crit_chance) {
+		damage *= 1.5;
+		CONS_Printf("Critical hit!!\n");
+	}
+
+	//CONS_Printf("Damage: %f\n", damage);
+	P_DamageMobj(moveanim_target, NULL, tmthing, (int)damage);
+
+	return;
+}
+
 //
 // P_EnterBattle
 //
@@ -675,6 +712,7 @@ void P_EnterBattle(mobj_t* player, mobj_t* enemy)
 	player->player->battlegauge = 0; // Reset battle gauge
 	battletarget = enemy;
 	canmove = false; // Menu select by default
+	S_ChangeMusicInternal("mbatt1", true);
 }
 
 //
@@ -10476,10 +10514,12 @@ void P_FlashPal(player_t *pl, UINT16 type, UINT16 duration)
 void P_Attack(mobj_t* source, mobj_t* target) {
 	moveanim = MOVEANIM_STROLL;
 	moveanim_step = 1;
+	moveanim_timer = 0;
 
 	// WE NEEDETH THIS!! WE SHALT RETURN TO THIS POSITION LATERE!!!
 	source->originalpos[0] = source->x;
 	source->originalpos[1] = source->y;
+	source->originalpos[2] = source->z;
 	source->originalangle = source->angle;
 
 	moveanim_source = source;

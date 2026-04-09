@@ -105,6 +105,7 @@ UINT8 moveanim_step = 0;
 moveanim_t moveanim = MOVEANIM_NONE;
 mobj_t* moveanim_source;
 mobj_t* moveanim_target;
+UINT16 moveanim_timer;
 
 item_t inventory[50];
 UINT8 numitems;

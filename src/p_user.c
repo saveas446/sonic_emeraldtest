@@ -9615,6 +9615,7 @@ void P_PlayerEscape(void)
 	if (P_RandomRange(1, 100) < chance) {
 		CONS_Printf("Escape successful!\n");
 		battle = false; // Set battle to false
+		P_RestoreMusic(&players[displayplayer]);
 		P_SetMobjState(battletarget, mobjinfo[battletarget->type].spawnstate); // Calm down whoever you were battling
 		battletarget = NULL;  // There is no target anymore!
 	} else {

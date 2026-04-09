@@ -295,40 +295,9 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 	// If we're touching the battletarget during the stroll animation, move on to the next step
 	if (moveanim_step == 1 && special == moveanim_target && moveanim == MOVEANIM_STROLL && toucher == moveanim_source)
 	{
-		float damage;
-
-		// TODO: Replace attackstat with chaospowerstat if this is a Chaos Power attack
-		damage = (moveanim_source->level) + 2;
-		damage *= ((float)moveanim_source->attackstat / (float)moveanim_target->defensestat);
-		damage *= 3;
-		damage += 2;
-
-		// Apply randomness
-		damage *= ((float)P_RandomRange(70, 120)) / 100;
-		
-		// Damage enemy, if we're a player deplete the battle gauge
-		if (moveanim_source->player)
-			moveanim_source->player->battlegauge = max(0, moveanim_source->player->battlegauge - 360); // Don't go below 0
-
-		
-		// 20% chance for critical hit!!
-		int crit_chance = 20;
-
-		/*// If your gauge is at least 1 and a half times filled, increase critical hit chance
-		if (moveanim_source->player && moveanim_source->player->battlegauge > 360 * 1.5)
-			crit_chance = 40;*/
-
-
-		// Apply critical hit		
-		if (P_RandomRange(1, 100) <= crit_chance) {
-			damage *= 1.5;
-			CONS_Printf("Critical hit!!\n");
-		}
-
-		//CONS_Printf("Damage: %f\n", damage);
-		P_DamageMobj(moveanim_target, NULL, tmthing, (int)damage);
-
+		P_BattleDamageMobj();
 		moveanim_step = 2;
+		moveanim_timer = 0;
 		return;
 	}
 

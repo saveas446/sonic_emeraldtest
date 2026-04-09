@@ -33,6 +33,7 @@ extern UINT8 moveanim_step; // Which step of the move animation are we at?
 extern moveanim_t moveanim; // WHICH move animation is playing?
 extern mobj_t* moveanim_source;
 extern mobj_t* moveanim_target;
+extern UINT16 moveanim_timer;
 
 extern item_t inventory[50];
 extern UINT8 numitems;

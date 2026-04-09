@@ -350,7 +350,7 @@ typedef struct mobj_s
 	fixed_t destscale;
 	fixed_t scalespeed;
 
-	fixed_t originalpos[2];
+	fixed_t originalpos[3];
 	angle_t originalangle;
 
 	UINT8 level; // Used internally for calculating damage
@@ -459,6 +459,7 @@ void P_RemovePrecipMobj(precipmobj_t *mobj);
 void P_SetScale(mobj_t *mobj, fixed_t newscale);
 void P_XYMovement(mobj_t *mo);
 void P_EmeraldManager(void);
+void P_BattleDamageMobj(void);
 void P_EnterBattle(mobj_t* player, mobj_t* enemy);
 void P_PlayerAttack(void);
 void P_PlayerCPAttack(void);

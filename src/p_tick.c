@@ -764,6 +764,7 @@ void P_Ticker(boolean run)
 		// End battle
 		if (battle && battletarget && battletarget->health < 1) {
 			battle = false;
+			P_RestoreMusic(&players[displayplayer]);
 
 			float xp = battletarget->attackstat + battletarget->defensestat + battletarget->chaospowerstat;
 			// Multiply by random range between 0.7 and 1.2
@@ -805,6 +806,35 @@ void P_Ticker(boolean run)
 			battletarget = NULL;
 		}
 
+
+	if (moveanim_step) {
+		moveanim_timer++;
+		CONS_Printf("Timer: %d\n", moveanim_timer);
+	}
+
+	// Screw this I give up.
+	if (moveanim_timer > TICRATE*3) {
+		moveanim_timer = 0;
+		switch (moveanim) {
+			case MOVEANIM_STROLL:
+			switch (moveanim_step) {
+				case 1:
+				moveanim_step++;
+				moveanim_source->x = moveanim_target->x;
+				moveanim_source->y = moveanim_target->y;
+				moveanim_source->z = moveanim_target->z;
+				break;
+				case 2:
+				moveanim_source->x = moveanim_source->originalpos[0];
+				moveanim_source->y = moveanim_source->originalpos[1];
+				moveanim_source->z = moveanim_source->originalpos[2];
+				moveanim_source->angle = moveanim_source->originalangle;
+				moveanim_step = 0;
+				break;
+			}
+			break;
+		}
+	}
 
 	if (moveanim_step == 1) {
 		switch (moveanim) {

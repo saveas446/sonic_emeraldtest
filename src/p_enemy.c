@@ -842,6 +842,10 @@ void A_Look(mobj_t *actor)
 	if (LUA_CallAction("A_Look", actor))
 		return;
 #endif
+	
+	// No polyamory
+	if (battle)
+		return;
 
 	if (P_LookForPlayers(actor, false, false, FRACUNIT*384)) {
 		if (actor->target)
