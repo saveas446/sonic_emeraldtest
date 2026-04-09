@@ -125,6 +125,7 @@ static patch_t *minus5sec;
 static patch_t *minicaps;
 static patch_t *gotrflag;
 static patch_t *gotbflag;
+static patch_t *dialogbox;
 
 static boolean facefreed[MAXPLAYERS];
 
@@ -167,8 +168,14 @@ hudinfo_t hudinfo[NUMHUDITEMS] =
 	{ 240, 160}, // HUD_LAP
 };
 
+dialogue_t testdialogue2 = {
+	"Page 2",
+	NULL
+};
+
 dialogue_t testdialogue = {
-	"Okay Sonic, let's start killing,\nsome \x85monsters\x80."
+	"Okay Sonic, let's start killing,\nsome \x85monsters\x80.",
+	&testdialogue2
 };
 
 UINT8 indialogue;
@@ -355,6 +362,8 @@ void ST_LoadGraphics(void)
 
 	for (i = 0; i < 7; ++i)
 		ngradeletters[i] = W_CachePatchName(va("GRADE%d", i), PU_HUDGFX);
+
+	dialogbox = W_CachePatchName("DIALOG", PU_HUDGFX);
 }
 
 // made separate so that skins code can reload custom face graphics
@@ -1809,7 +1818,7 @@ static void ST_overlayDrawer(void)
 	}
 
 	if (indialogue) {
-		V_DrawFill(0, 148, 320, 80, 31);
+		V_DrawScaledPatch(0, 148, V_40TRANS, dialogbox);
 
 		int drawx, drawy;
 		drawx = 0;
@@ -1887,8 +1896,15 @@ static void ST_overlayDrawer(void)
 			else
 				numchars++;
 		} else {
-			if (stplyr->cmd.buttons & BT_USE || stplyr->cmd.buttons & BT_JUMP) 
-				indialogue = false;
+			if (stplyr->cmd.buttons & BT_USE || stplyr->cmd.buttons & BT_JUMP)  {
+				if (currentdialogue->next) {
+					// Go to next dialogue and reset
+					currentdialogue = currentdialogue->next;
+					numchars = 0;
+				} else {
+					indialogue = false;
+				}
+			}
 		}
 	}
 

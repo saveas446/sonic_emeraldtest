@@ -809,7 +809,7 @@ void P_Ticker(boolean run)
 
 	if (moveanim_step) {
 		moveanim_timer++;
-		CONS_Printf("Timer: %d\n", moveanim_timer);
+		//CONS_Printf("Timer: %d\n", moveanim_timer);
 	}
 
 	// Screw this I give up.

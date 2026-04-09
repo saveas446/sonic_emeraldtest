@@ -3,8 +3,9 @@
     #include "doomtype.h"
 
     // Only text for now
-    typedef struct {
+    typedef struct dialogue_s {
         const char* text;
+        struct dialogue_s *next;
     } dialogue_t;
 
     extern dialogue_t testdialogue;
