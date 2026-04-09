@@ -32,6 +32,7 @@
 #include "p_slopes.h"
 #include "hu_stuff.h"
 #include "m_misc.h"
+#include "st_stuff.h"
 #include "m_cond.h" //unlock triggers
 #include "lua_hook.h" // LUAh_LinedefExecute
 
@@ -3548,10 +3549,10 @@ void P_ProcessSpecialSector(player_t *player, sector_t *sector, sector_t *rovers
 	INT32 section1, section2, section3, section4;
 	INT32 special;
 
-	section1 = GETSECSPECIAL(sector->special, 1);
+	/*section1 = GETSECSPECIAL(sector->special, 1);
 	section2 = GETSECSPECIAL(sector->special, 2);
 	section3 = GETSECSPECIAL(sector->special, 3);
-	section4 = GETSECSPECIAL(sector->special, 4);
+	section4 = GETSECSPECIAL(sector->special, 4);*/
 
 	// Ignore spectators
 	if (player->spectator)
@@ -3563,14 +3564,14 @@ void P_ProcessSpecialSector(player_t *player, sector_t *sector, sector_t *rovers
 	if (player->playerstate == PST_DEAD)
 		return;
 
-	// Conveyor stuff
+	/*// Conveyor stuff
 	if (section3 == 2 || section3 == 4)
-		player->onconveyor = section3;
+		player->onconveyor = section3;*/
 
-	special = section1;
+	//special = section1;
 
 	// Process Section 1
-	switch (special)
+	switch (sector->special)
 	{
 		case 1: // Damage (Generic)
 			if (roversector || P_MobjReadyToTrigger(player->mo, sector))
@@ -3643,9 +3644,20 @@ void P_ProcessSpecialSector(player_t *player, sector_t *sector, sector_t *rovers
 		case 14: // Non-Ramp Sector (Don't step-down)
 		case 15: // Bouncy Sector (FOF Control Only)
 			break;
+		case 16:
+			// Restore health to max
+			float health = (float)player->mo->info->spawnhealth;
+
+			for (int i = 1; i < player->mo->level; i++)
+				health *= 1.1;	
+
+			player->mo->health = (int)ceil(health);
+
+			HU_DoCEcho("You feel well rested...");
+		break;
 	}
 
-	special = section2;
+	/*special = section2;
 
 	// Process Section 2
 	switch (special)
@@ -3710,7 +3722,7 @@ void P_ProcessSpecialSector(player_t *player, sector_t *sector, sector_t *rovers
 					}
 				}
 			/* FALLTHRU */
-		case 4: // Linedef executor that doesn't require touching floor
+		/*case 4: // Linedef executor that doesn't require touching floor
 		case 5: // Linedef executor
 		case 6: // Linedef executor (7 Emeralds)
 		case 7: // Linedef executor (NiGHTS Mare)
@@ -4439,7 +4451,7 @@ DoneSection2:
 		case 14: // Unused
 		case 15: // Unused
 			break;
-	}
+	}*/
 }
 
 /** Checks if an object is standing on or is inside a special 3D floor.

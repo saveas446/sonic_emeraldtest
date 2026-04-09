@@ -158,7 +158,7 @@ char english_shiftxform[] =
 static char cechotext[1024];
 static tic_t cechotimer = 0;
 static tic_t cechoduration = 5*TICRATE;
-static INT32 cechoflags = 0;
+static INT32 cechoflags = V_ALLOWLOWERCASE;
 
 //======================================================================
 //                          HEADS UP INIT
