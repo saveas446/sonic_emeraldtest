@@ -2440,7 +2440,7 @@ void G_SpawnPlayer(INT32 playernum, boolean starpost)
 
 }
 
-void G_SpawnPlayerTransition(INT32 playernum, boolean starpost, fixed_t* pos, fixed_t* mom)
+void G_SpawnPlayerTransition(INT32 playernum, boolean starpost, fixed_t* pos, fixed_t* mom, state_t* state)
 {
 	mapthing_t *spawnpoint;
 
@@ -2508,6 +2508,13 @@ void G_SpawnPlayerTransition(INT32 playernum, boolean starpost, fixed_t* pos, fi
 	
 		mobj = P_SpawnMobj(pos[0], pos[1], pos[2], MT_PLAYER);
 		(mobj->player = p)->mo = mobj;
+
+		for (int i = 0; i < NUMSTATES; i++) {
+			if (&states[i] == state) {
+				P_SetPlayerMobjState(mobj, i);
+				break;
+			}
+		}
 
 		mobj->momx = mom[0];
 		mobj->momy = mom[1];

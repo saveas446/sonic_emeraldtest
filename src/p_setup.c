@@ -2740,6 +2740,7 @@ boolean P_SetupLevel(boolean skipprecip, boolean hexentrans)
 	fixed_t campos[3];
 	angle_t camangle;
 	fixed_t mom[MAXPLAYERS][3];
+	state_t* state[MAXPLAYERS];
 
 	// Back up various values
 	if (hexentrans) {
@@ -2756,6 +2757,7 @@ boolean P_SetupLevel(boolean skipprecip, boolean hexentrans)
 				campos[1] = camera.y;
 				campos[2] = camera.z;
 				camangle = camera.angle;
+				state[i] = players[i].mo->state;
 			}
 		}
 	}
@@ -2873,7 +2875,7 @@ boolean P_SetupLevel(boolean skipprecip, boolean hexentrans)
 	}
 
 	// Print "SPEEDING OFF TO [ZONE] [ACT 1]..."
-	if (rendermode != render_none)
+	if (rendermode != render_none && !hexentrans)
 	{
 		// Don't include these in the fade!
 		char tx[64];
@@ -3074,7 +3076,7 @@ boolean P_SetupLevel(boolean skipprecip, boolean hexentrans)
 			if (!hexentrans)
 				G_SpawnPlayer(i, false);
 			else
-				G_SpawnPlayerTransition(i, false, &pos[i], &mom[i]);
+				G_SpawnPlayerTransition(i, false, &pos[i], &mom[i], state[i]);
 		}
 	}
 
@@ -3245,10 +3247,12 @@ boolean P_SetupLevel(boolean skipprecip, boolean hexentrans)
 #endif
 	}
 
-	// Just reset all party members to Level 1 with 0 XP for now
-	for (i = 0; i < MAXPLAYERS; i++) {
-		players[i].xp = 0;
-		players[i].rings = 0; // BROKE INDIVIDUAL ALERT
+	if (!hexentrans) {
+		// Just reset all party members to Level 1 with 0 XP for now
+		for (i = 0; i < MAXPLAYERS; i++) {
+			players[i].xp = 0;
+			players[i].rings = 0; // BROKE INDIVIDUAL ALERT
+		}
 	}
 
 	return true;
