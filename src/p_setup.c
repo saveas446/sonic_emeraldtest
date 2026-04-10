@@ -2648,6 +2648,43 @@ static void P_SetupCamera(void)
 	}
 }
 
+static void P_SetupCameraHexenTrans(fixed_t x, fixed_t y, fixed_t z, angle_t angle)
+{
+	if (players[displayplayer].mo && (server || addedtogame))
+	{
+		camera.x = x;
+		camera.y = y; 
+		camera.z = z;
+		camera.angle = angle;
+		camera.subsector = R_PointInSubsector(camera.x, camera.y); // make sure camera has a subsector set -- Monster Iestyn (12/11/18)
+	}
+	else
+	{
+		mapthing_t *thing;
+
+		switch (gametype)
+		{
+		case GT_MATCH:
+		case GT_TAG:
+			thing = deathmatchstarts[0];
+			break;
+
+		default:
+			thing = playerstarts[0];
+			break;
+		}
+
+		if (thing)
+		{
+			camera.x = thing->x;
+			camera.y = thing->y;
+			camera.z = thing->z;
+			camera.angle = FixedAngle((fixed_t)thing->angle << FRACBITS);
+			camera.subsector = R_PointInSubsector(camera.x, camera.y); // make sure camera has a subsector set -- Monster Iestyn (12/11/18)
+		}
+	}
+}
+
 static boolean P_CanSave(void)
 {
 	// Saving is completely ignored under these conditions:
@@ -2673,9 +2710,10 @@ static boolean P_CanSave(void)
 /** Loads a level from a lump or external wad.
   *
   * \param skipprecip If true, don't spawn precipitation.
+  * \param hexentrans Hexen-like level transition, load the next map instantly.
   * \todo Clean up, refactor, split up; get rid of the bloat.
   */
-boolean P_SetupLevel(boolean skipprecip)
+boolean P_SetupLevel(boolean skipprecip, boolean hexentrans)
 {
 	// use gamemap to get map number.
 	// 99% of the things already did, so.
@@ -2698,13 +2736,35 @@ boolean P_SetupLevel(boolean skipprecip)
 	indialogue = false;
 	currentdialogue = NULL;
 
+	fixed_t pos[MAXPLAYERS][3];
+	fixed_t campos[3];
+	angle_t camangle;
+	fixed_t mom[MAXPLAYERS][3];
+
+	// Back up various values
+	if (hexentrans) {
+		for (i = 0; i < MAXPLAYERS; i++) {
+			if (playeringame[i]) {
+				CONS_Debug(DBG_BASIC, "PLEASE X: %d, Y: %d, Z: %d\n", players[i].mo->x >> FRACBITS, players[i].mo->y >> FRACBITS, players[i].mo->z >> FRACBITS);
+				pos[i][0] = players[i].mo->x;
+				pos[i][1] = players[i].mo->y;
+				pos[i][2] = players[i].mo->z;
+				mom[i][0] = players[i].mo->momx;
+				mom[i][1] = players[i].mo->momy;
+				mom[i][2] = players[i].mo->momz;
+				campos[0] = camera.x;
+				campos[1] = camera.y;
+				campos[2] = camera.z;
+				camangle = camera.angle;
+			}
+		}
+	}
 
 	// This is needed. Don't touch.
 	maptol = mapheaderinfo[gamemap-1]->typeoflevel;
 
 	CON_Drawer(); // let the user know what we are going to do
 	I_FinishUpdate(); // page flip or blit buffer
-
 
 	// Reset the palette
 	if (rendermode != render_none)
@@ -2728,7 +2788,8 @@ boolean P_SetupLevel(boolean skipprecip)
 	if (cv_runscripts.value && mapheaderinfo[gamemap-1]->scriptname[0] != '#')
 		P_RunLevelScript(mapheaderinfo[gamemap-1]->scriptname);
 
-	P_LevelInitStuff();
+	if (!hexentrans)
+		P_LevelInitStuff();
 
 	postimgtype = postimgtype2 = postimg_none;
 
@@ -2798,15 +2859,17 @@ boolean P_SetupLevel(boolean skipprecip)
 	// We should be fine starting it here.
 	S_Start();
 
-	// Let's fade to black here
-	// But only if we didn't do the special stage wipe
-	if (rendermode != render_none && !ranspecialwipe)
-	{
-		F_WipeStartScreen();
-		V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, 31);
+	if (!hexentrans) {
+		// Let's fade to black here
+		// But only if we didn't do the special stage wipe
+		if (rendermode != render_none && !ranspecialwipe)
+		{
+			F_WipeStartScreen();
+			V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, 31);
 
-		F_WipeEndScreen();
-		F_RunWipe(wipedefs[wipe_level_toblack], false);
+			F_WipeEndScreen();
+			F_RunWipe(wipedefs[wipe_level_toblack], false);
+		}
 	}
 
 	// Print "SPEEDING OFF TO [ZONE] [ACT 1]..."
@@ -3000,32 +3063,22 @@ boolean P_SetupLevel(boolean skipprecip)
 		goto netgameskip;
 	// ==========
 
-	for (i = 0; i < MAXPLAYERS; i++)
+	for (i = 0; i < MAXPLAYERS; i++) {
 		if (playeringame[i])
 		{
 			players[i].pflags &= ~PF_NIGHTSMODE;
 
 			// Start players with pity shields if possible
 			players[i].pity = -1;
-
-			if (!G_PlatformGametype())
-			{
-				players[i].mo = NULL;
-				G_DoReborn(i);
-			}
-			else // gametype is GT_COOP or GT_RACE
-			{
-				players[i].mo = NULL;
-
-				if (players[i].starposttime)
-				{
-					G_SpawnPlayer(i, true);
-					P_ClearStarPost(players[i].starpostnum);
-				}
-				else
-					G_SpawnPlayer(i, false);
-			}
+			
+			if (!hexentrans)
+				G_SpawnPlayer(i, false);
+			else
+				G_SpawnPlayerTransition(i, false, &pos[i], &mom[i]);
 		}
+	}
+
+
 
 	if (modeattacking == ATTACKING_RECORD && !demoplayback)
 		P_LoadRecordGhosts();
@@ -3078,8 +3131,10 @@ boolean P_SetupLevel(boolean skipprecip)
 
 	if (!dedicated)
 	{
-		P_SetupCamera();
-
+		if (!hexentrans)
+			P_SetupCamera();
+		else 
+			P_SetupCameraHexenTrans(campos[0], campos[1], campos[2], camangle);
 		// Salt: CV_ClearChangedFlags() messes with your settings :(
 		/*if (!cv_cam_height.changed)
 			CV_Set(&cv_cam_height, cv_cam_height.defaultvalue);

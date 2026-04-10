@@ -3655,6 +3655,17 @@ void P_ProcessSpecialSector(player_t *player, sector_t *sector, sector_t *rovers
 
 			HU_DoCEcho("You feel well rested...");
 		break;
+		case 8191: // Warp to gamemap - 1
+			gamemap--;
+			P_SetupLevel(false, true);
+		break;
+		case 8192: // Warp to gamemap + 1
+			if (player->bot)
+				break;
+		
+			gamemap++;
+			P_SetupLevel(false, true);
+		break;
 	}
 
 	/*special = section2;

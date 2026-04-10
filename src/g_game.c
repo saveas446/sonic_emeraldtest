@@ -1720,7 +1720,7 @@ void G_DoLoadLevel(boolean resetplayer)
 	}
 
 	// Setup the level.
-	if (!P_SetupLevel(false))
+	if (!P_SetupLevel(false, false))
 	{
 		// fail so reset game stuff
 		Command_ExitGame_f();
@@ -2438,6 +2438,107 @@ void G_SpawnPlayer(INT32 playernum, boolean starpost)
 	LUAh_PlayerSpawn(&players[playernum]); // Lua hook for player spawning :)
 #endif
 
+}
+
+void G_SpawnPlayerTransition(INT32 playernum, boolean starpost, fixed_t* pos, fixed_t* mom)
+{
+	mapthing_t *spawnpoint;
+
+	if (!playeringame[playernum])
+		return;
+
+		player_t *p = &players[playernum];
+		mobj_t *mobj;
+	
+		if (p->playerstate == PST_REBORN)
+			G_PlayerReborn(playernum);
+	
+		// spawn as spectator determination
+		if (!G_GametypeHasSpectators())
+		{
+			// Special case for (NiGHTS) special stages!
+			// if stage has already started, force players to become spectators until the next stage
+			if (multiplayer && netgame && G_IsSpecialStage(gamemap) && useNightsSS && leveltime > 0)
+				p->spectator = true;
+			else
+				p->spectator = false;
+		}
+		else if (netgame && p->jointime < 1)
+			p->spectator = true;
+		else if (multiplayer && !netgame)
+		{
+			// If you're in a team game and you don't have a team assigned yet...
+			if (G_GametypeHasTeams() && p->ctfteam == 0)
+			{
+				changeteam_union NetPacket;
+				UINT16 usvalue;
+				NetPacket.value.l = NetPacket.value.b = 0;
+	
+				// Spawn as a spectator,
+				// yes even in splitscreen mode
+				p->spectator = true;
+				if (playernum&1) p->skincolor = skincolor_redteam;
+				else             p->skincolor = skincolor_blueteam;
+	
+				// but immediately send a team change packet.
+				NetPacket.packet.playernum = playernum;
+				NetPacket.packet.verification = true;
+				NetPacket.packet.newteam = !(playernum&1) + 1;
+	
+				usvalue = SHORT(NetPacket.value.l|NetPacket.value.b);
+				SendNetXCmd(XD_TEAMCHANGE, &usvalue, sizeof(usvalue));
+			}
+			else // Otherwise, never spectator.
+				p->spectator = false;
+		}
+	
+		if (G_GametypeHasTeams())
+		{
+			// Fix stupid non spectator spectators.
+			if (!p->spectator && !p->ctfteam)
+				p->spectator = true;
+	
+			// Fix team colors.
+			// This code isn't being done right somewhere else. Oh well.
+			if (p->ctfteam == 1)
+				p->skincolor = skincolor_redteam;
+			else if (p->ctfteam == 2)
+				p->skincolor = skincolor_blueteam;
+		}
+	
+		mobj = P_SpawnMobj(pos[0], pos[1], pos[2], MT_PLAYER);
+		(mobj->player = p)->mo = mobj;
+
+		mobj->momx = mom[0];
+		mobj->momy = mom[1];
+		mobj->momz = mom[2];
+	
+		mobj->angle = 0;
+	
+		// set color translations for player sprites
+		mobj->color = p->skincolor;
+	
+		// set 'spritedef' override in mobj for player skins.. (see ProjectSprite)
+		// (usefulness: when body mobj is detached from player (who respawns),
+		// the dead body mobj retains the skin through the 'spritedef' override).
+		mobj->skin = &skins[p->skin];
+	
+		mobj->health = p->health;
+		p->playerstate = PST_LIVE;
+	
+		p->bonustime = false;
+		p->realtime = leveltime;
+	
+		//awayview stuff
+		p->awayviewmobj = NULL;
+		p->awayviewtics = 0;
+	
+		// set the scale to the mobj's destscale so settings get correctly set.  if we don't, they sometimes don't.
+		P_SetScale(mobj, mobj->destscale);
+		P_FlashPal(p, 0, 0); // Resets
+	
+		// Spawn with a pity shield if necessary.
+		P_DoPityCheck(p);
 }
 
 mapthing_t *G_FindCTFStart(INT32 playernum)
