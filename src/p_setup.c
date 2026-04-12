@@ -2746,7 +2746,7 @@ boolean P_SetupLevel(boolean skipprecip, boolean hexentrans)
 	if (hexentrans) {
 		for (i = 0; i < MAXPLAYERS; i++) {
 			if (playeringame[i]) {
-				CONS_Debug(DBG_BASIC, "PLEASE X: %d, Y: %d, Z: %d\n", players[i].mo->x >> FRACBITS, players[i].mo->y >> FRACBITS, players[i].mo->z >> FRACBITS);
+				CONS_Debug(DBG_BASIC, "Carrying over player pos at X: %d, Y: %d, Z: %d!\n", players[i].mo->x >> FRACBITS, players[i].mo->y >> FRACBITS, players[i].mo->z >> FRACBITS);
 				pos[i][0] = players[i].mo->x;
 				pos[i][1] = players[i].mo->y;
 				pos[i][2] = players[i].mo->z;
